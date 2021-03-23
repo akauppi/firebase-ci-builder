@@ -1,6 +1,6 @@
-# firebase-node-builder
+# firebase-custom-builder
 
-Docker image for [@akauppi/firebase-jest-testing](http://github.com/akauppi/firebase-jest-testing) (and projects using it).
+Docker image for projects needing to run Firebase CLI, `npm` and Firebase emulation (which requires Java).
 
 **Provides**
 
@@ -8,100 +8,118 @@ Docker image for [@akauppi/firebase-jest-testing](http://github.com/akauppi/fire
   - OpenJDK 11
 - `npm` and node.js 14
 
-(*) All provided emulators are fetched: `database`, `firestore`, `pubsub`
+(*) These emulators are pre-fetched: `database`, `firestore`, `pubsub`.
 
 **Other images**
 
-There are [many images](https://hub.docker.com/search?q=firebase&type=image) for Firebase in Docker Hub but they seem to be made for personal use, and don't e.g. track tooling upgrades. They may also sport some project specific libraries which makes them unsuitable a base image. The idea is to gather that momentum together so if you have your own, please consider using this instead for a stronger Firebase testing community.
+There are [many images](https://hub.docker.com/search?q=firebase&type=image) for Firebase in Docker Hub but they seem to be made for personal use, and don't e.g. track tooling upgrades. They may also sport some project specific libraries which makes them unsuitable as a base image. The idea is to gather that momentum together so if you have your own, please consider using this instead for a stronger Firebase testing community.
+
+- Community [Firebase image](https://github.com/GoogleCloudPlatform/cloud-builders-community/tree/master/firebase)
+
+  Is left behind. 
+  
+  The info that there's emulation (that requires Java) has not reached it, yet. There is an [issue](https://github.com/GoogleCloudPlatform/cloud-builders-community/issues/441) raised but no PR. Pushing this code to the community repo would be the right thing to do but feels like too much friction for the author.
+
+- [`timbru31/docker-java-node`](https://github.com/timbru31/docker-java-node)
+ 
+  This repo is mentioned as a foundation having both Java and Node. However, the author faced problems building it (23-Mar-21). Being based on "Azul" OpenJDK image wasn't reaffirming for general use, either. 
+
+  The repo takes a JDK/JRE base image and installs Node on top of it. This repo does the opposite: takes a Node base image and installs Java on top of that.
+
 
 ---
 
-This document shows maintainer details. To simply see how to use the Docker image, FF to [Using the image](#using-the-image).
+Publishing Docker images may be costly (you are charged by the downloads, and images are big), so the approach taken here is that you build the image on your own, and push it to a private repo that *your* projects use.
+
+This certainly works for the author.
 
 
 ## Requirements
 
 - Docker
-
-For publishing to GitHub Packages, you need an access token with `write:packages` scope.
-
-1. Go to your GitHub profile > Settings
-2. Developer Settings 
-3. Personal Access Tokens > [Generate new token](https://github.com/settings/tokens/new)
-4. Tick `write:packages` (also ticks `read:packages` and `repo`)
-5. `Generate token`
-
-Pick the token value; it will be used as `$TOKEN`, later.
+- Gnu `make`
+- `gcloud` CLI
 
 Recommended (optional):
 
 - [dive](https://github.com/wagoodman/dive) - "A tool for exploring each layer in a docker image"
 
+### Configure Docker
+
+>Before you can push or pull images, you must configure Docker to use the gcloud command-line tool to authenticate requests to Container Registry.<sub>[source](https://cloud.google.com/container-registry/docs/quickstart)</sub>
+
+```
+$ gcloud auth configure-docker
+```
 
 ## Build the image locally
 
 You can do this simply to see that the build succeeds.
 
 ```
-$ docker build .
+$ make build
 ...
 Successfully built 29a6e8655e16
 ```
 
-It should result in an image of ~685 MB in size, containing:
+It should result in an image of ~679 MB in size, containing:
 
 - JDK
 - `firebase` CLI
 - `npm` and node.js
 - Emulator images in `.cache/firebase/emulators/`
 
-
-## Pushing to GitHub Packages
-
-With:
-
-- `$IMAGE_ID` being the id of a built image
-- `$USERNAME` your GitHub username (`akauppi`)
-- `$REPOSITORY` = name of one's repo: `firebase-jest-testing`
-- `$IMAGE_NAME` = `firebase-node-builder`
-- `$VERSION` e.g. `8.8.1-node14-300820a`
-- `$TOKEN_TXT` being a file that contains your GitHub token
-
-Here, we use `firebase-jest-testing` as the repo name since the images really are for that project. This allows us to later move these source there, if we want to.
-
-First, let's log in with the token you have created:
+You can check the size by:
 
 ```
-$ echo $TOKEN | docker login https://docker.pkg.github.com -u $USERNAME --password-stdin
-Login Succeeded
+$ docker image ls firebase-custom-builder:9.6.0-node14
+REPOSITORY                TAG                 IMAGE ID            CREATED             SIZE
+firebase-custom-builder   9.6.0-node14        6e84ee9f7a74        3 hours ago         679MB
 ```
 
-Then, tag the built image:
+
+## Push to...
+
+### Container Registry (Google Cloud)
+
+Check that there is a suitable GCP project:
 
 ```
-$ docker tag $IMAGE_ID docker.pkg.github.com/$USERNAME/$REPOSITORY/$IMAGE_NAME:$VERSION
+$ gcloud config get-value project 2>/dev/null
+some-230321
 ```
 
-Push to GitHub Packages:
-
 ```
-$ docker push docker.pkg.github.com/$USERNAME/$REPOSITORY/$IMAGE_NAME:$VERSION
+$ make push
+docker build --build-arg FIREBASE_VERSION=9.6.0 . -t firebase-custom-builder:9.6.0-node14
+...
+Successfully built 6e84ee9f7a74
+Successfully tagged firebase-custom-builder:9.6.0-node14
+docker tag firebase-custom-builder:9.6.0-node14 gcr.io/groundlevel-160221/firebase-custom-builder:9.6.0-node14
+docker push gcr.io/groundlevel-160221/firebase-custom-builder:9.6.0-node14
+The push refers to repository [gcr.io/groundlevel-160221/firebase-custom-builder]
+7d5805f5a13c: Pushed 
+493987b335c5: Pushed 
+09bb4df3245b: Pushed 
+a9f0fd5d0c5e: Pushed 
+aedafbecb0b3: Layer already exists 
+db809908a198: Layer already exists 
+1b235e8e7bda: Layer already exists 
+3e207b409db3: Layer already exists 
+9.6.0-node14: digest: sha256:97f17c562507799c6b52786147d70aa56c848ee2d67eff590aa567d7a9b1c019 size: 2003
 ```
-
->Note: If you get problems about the validity of the token here, it may be that the token you fed to `docker login` had newlines. Unfortunately, though it says "Login Succeeded" it likely checks the login only when pushing.
-
-
 
 ## Using the image
 
-You can refer to the image as:
+You can now use the image eg. in Cloud Build as:
 
 ```
-docker.pkg.github.com/akauppi/firebase-jest-testing/firebase-node-builder:8.8.1-node14
+gcr.io/<your-project-id>/firebase-custom-builder:9.6.0-node14
 ```
+
 
 ## References
 
-- [nodejs/docker-node > Node.js](https://github.com/nodejs/docker-node/blob/master/README.md#how-to-use-this-image) (node docs)
-- [Configuring Docker for use with GitHub Packages](https://docs.github.com/en/packages/using-github-packages-with-your-projects-ecosystem/configuring-docker-for-use-with-github-packages) (GitHub docs)
+- `nodejs/docker-node` > [Node.js > How to use this image](https://github.com/nodejs/docker-node/blob/master/README.md#how-to-use-this-image) (node docs)
+- Cloud Build > ... > [Creating a custom builder](https://cloud.google.com/build/docs/configuring-builds/use-community-and-custom-builders#creating_a_custom_builder) (Cloud Build docs)
 

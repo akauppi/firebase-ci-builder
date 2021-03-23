@@ -10,12 +10,12 @@
 #   - Best practices for writing Dockerfiles
 #       -> https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
 #
-# Want node 14. Once it's gotten to LTS, can change to:
-#FROM node:lts-alpine
-FROM node:14-alpine
+FROM node:lts-alpine
+#FROM node:14-alpine
 
 # Version of 'firebase-tools' is also our version
-ENV FIREBASE_VERSION 8.8.1
+ARG FIREBASE_VERSION
+ENV FIREBASE_VERSION 9.6.0
 
 ENV HOME /project
 ENV USER user
@@ -28,8 +28,11 @@ RUN firebase setup:emulators:database && \
   firebase setup:emulators:firestore && \
   firebase setup:emulators:pubsub
 
-# ls .cache/firebase/emulators/
-#cloud-firestore-emulator-v1.11.7.jar   firebase-database-emulator-v4.5.0.jar  pubsub-emulator-0.1.0                  pubsub-emulator-0.1.0.zip
+# ls -1 .cache/firebase/emulators/
+#   cloud-firestore-emulator-v1.11.12.jar
+#   firebase-database-emulator-v4.7.2.jar
+#   pubsub-emulator-0.1.0
+#   pubsub-emulator-0.1.0.zip
 #
 # = note that Firestore, Firebase emulators don't uncompress but PubSub does (and is distributed as a zip).
 #   To see whether we can reduce the image size, one could uncompress those and remove the '.jar' files. #later????
