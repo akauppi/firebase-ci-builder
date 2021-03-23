@@ -17,10 +17,20 @@ _IMAGE_NAME=firebase-custom-builder
 _TAG=${FIREBASE_VERSION}-node14
 
 _LOCAL_NAME=${_IMAGE_NAME}:${_TAG}
-_GCR_NAME=gcr.io/${PROJECT_ID}/${_IMAGE_NAME}:${_TAG}
 
-#PROJECT_ID=
+# Container Registry images are in one of:
+#	asia.gcr.io
+#	eu.gcr.io
+#	us.gcr.io (same as plain gcr.io)
+#
+# Source: https://cloud.google.com/container-registry/docs/pushing-and-pulling
+#
+_GCR_IO=eu.gcr.io
 
+_GCR_NAME=${_GCR_IO}/${PROJECT_ID}/${_IMAGE_NAME}:${_TAG}
+	# PROJECT_ID defined by 'make push', as a recursive call.
+
+#---
 all:
 
 build:
@@ -28,15 +38,15 @@ build:
 
 # Force a rebuild each time. Makes it simpler/safer and Docker is rather fast if things are already cached.
 #
-push: build _evalProject
+push: build
+	PROJECT_ID=$(shell gcloud config get-value project 2>/dev/null) ${MAKE} _realPush
+_realPush:
 	docker tag ${_LOCAL_NAME} ${_GCR_NAME}
 	docker push ${_GCR_NAME}
 
-_evalProject:
-	$(eval PROJECT_ID:=$(shell gcloud config get-value project 2>/dev/null))
-
-.PHONY: _evalProject
+.PHONY: all build push _realPush
 
 #---
 echo:
 	@echo ${PROJECT_ID}
+

@@ -89,8 +89,16 @@ $ gcloud config get-value project 2>/dev/null
 some-230321
 ```
 
+Decide, which domain you wish to push the image to.
+
+This should ideally be close to where your builds happen. See GCR > [Pushing and pulling](https://cloud.google.com/container-registry/docs/pushing-and-pulling).
+
+Prefix the command then with `_GCR_IO=[asia|eu|us].gcr.io`, according to your needs.
+
+*tbd. We could also interactively ask this. One day..*
+
 ```
-$ make push
+$ _GCR_IO=eu.gcr.io make push
 docker build --build-arg FIREBASE_VERSION=9.6.0 . -t firebase-custom-builder:9.6.0-node14
 ...
 Successfully built 6e84ee9f7a74
@@ -114,7 +122,7 @@ db809908a198: Layer already exists
 You can now use the image eg. in Cloud Build as:
 
 ```
-gcr.io/<your-project-id>/firebase-custom-builder:9.6.0-node14
+eu.gcr.io/<your-project-id>/firebase-custom-builder:9.6.0-node14
 ```
 
 
