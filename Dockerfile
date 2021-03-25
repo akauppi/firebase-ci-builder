@@ -10,8 +10,19 @@
 #   - Best practices for writing Dockerfiles
 #       -> https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
 #
+
+# Node images
+#   -> https://hub.docker.com/_/node
+#
+# As of Mar'21:
+#   "current-alpine": 15.12.0
+#   "lts-alpine": 14.16.0
+#   "15-alpine"
+#   "14-alpine"
+#
+# Note: IF YOU CHANGE THIS, change the '-nodeXX' suffix within 'Makefile'.
+#
 FROM node:lts-alpine
-#FROM node:14-alpine
 
 # Version of 'firebase-tools' is also our version
 ARG FIREBASE_VERSION
@@ -19,9 +30,6 @@ ENV FIREBASE_VERSION 9.6.0
 
 ENV HOME /project
 ENV USER user
-
-# Maybe we want to update 'npm'? (6.14.6 -> 7.7.4; 25-Mar-21)
-RUN npm install -g npm
 
 RUN apk --no-cache add openjdk11-jre bash && \
   yarn global add firebase-tools@${FIREBASE_VERSION} && \

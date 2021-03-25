@@ -62,11 +62,11 @@ $ make build
 Successfully built 29a6e8655e16
 ```
 
-It should result in an image of ~679 MB in size, containing:
+It should result in an image of ~706 <!--was:~679--> MB in size, containing:
 
 - JDK
 - `firebase` CLI
-- `npm` and node.js
+- `node`, `npm` and `yarn`
 - Emulator images in `.cache/firebase/emulators/`
 
 You can check the size by:
@@ -74,7 +74,7 @@ You can check the size by:
 ```
 $ docker image ls firebase-custom-builder:9.6.0-node14
 REPOSITORY                TAG                 IMAGE ID            CREATED             SIZE
-firebase-custom-builder   9.6.0-node14        6e84ee9f7a74        3 hours ago         679MB
+firebase-custom-builder   9.6.0-node14        c196e6e1881e        2 minutes ago       706MB
 ```
 
 

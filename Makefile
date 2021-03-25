@@ -5,15 +5,11 @@
 #	- gcloud
 #	- docker
 #
-
-# Possible tags:
-#	'lts-alpine' (14.16.0 as of 23-Mar-21)
-#
-NODE_IMAGE_TAG=lts-alpine
-
 FIREBASE_VERSION=9.6.0
 
 _IMAGE_NAME=firebase-custom-builder
+
+# Note: '-node14' is NOT connected with what the base image in 'Dockerfile' provides. MAINTAIN MANUALLY!!!
 _TAG=${FIREBASE_VERSION}-node14
 
 _LOCAL_NAME=${_IMAGE_NAME}:${_TAG}
@@ -41,8 +37,9 @@ _GCR_NAME_TAGGED=${_GCR_IO}/${_PROJECT_ID}/${_IMAGE_NAME}:${PUSH_TAG}
 #---
 all:
 
+# Note: '--pull' for not getting stale base images
 build:
-	docker build --build-arg FIREBASE_VERSION=${FIREBASE_VERSION} . -t ${_LOCAL_NAME}
+	docker build --pull --build-arg FIREBASE_VERSION=${FIREBASE_VERSION} . -t ${_LOCAL_NAME}
 
 # Force a rebuild each time. Makes it simpler/safer and Docker is rather fast if things are already cached.
 #
