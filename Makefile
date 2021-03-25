@@ -14,7 +14,7 @@ NODE_IMAGE_TAG=lts-alpine
 FIREBASE_VERSION=9.6.0
 
 _IMAGE_NAME=firebase-custom-builder
-_TAG?=${FIREBASE_VERSION}-node14
+_TAG=${FIREBASE_VERSION}-node14
 
 _LOCAL_NAME=${_IMAGE_NAME}:${_TAG}
 
@@ -27,8 +27,16 @@ _LOCAL_NAME=${_IMAGE_NAME}:${_TAG}
 #
 _GCR_IO=eu.gcr.io
 
-_GCR_NAME_TAGGED=${_GCR_IO}/${PROJECT_ID}/${_IMAGE_NAME}:${_TAG}
-	# PROJECT_ID defined by 'make push', as a recursive call.
+# Lazy evaluation trick
+#FOO = $(eval FOO := expensive-to-evaluate)$(FOO)
+# from -> https://blog.jgc.org/2016/07/lazy-gnu-make-variables.html
+#
+_PROJECT_ID=$(eval _PROJECT_ID := $(shell gcloud config get-value project 2>/dev/null))$(_PROJECT_ID)
+
+# Overrides
+PUSH_TAG?=${_TAG}
+
+_GCR_NAME_TAGGED=${_GCR_IO}/${_PROJECT_ID}/${_IMAGE_NAME}:${PUSH_TAG}
 
 #---
 all:
@@ -41,17 +49,16 @@ build:
 # Note: We only push the _tagged_ name. If you want, you can push ':latest' manually.
 #
 push: build
-	PROJECT_ID=$(shell gcloud config get-value project 2>/dev/null) ${MAKE} _realPush
+	${MAKE} _realPush
 _realPush:
 	docker tag ${_LOCAL_NAME} ${_GCR_NAME_TAGGED}
 	docker push ${_GCR_NAME_TAGGED}
 
 push-latest: build
-	PROJECT_ID=$(shell gcloud config get-value project 2>/dev/null) _TAG=latest ${MAKE} _realPush
+	PUSH_TAG=latest ${MAKE} _realPush
 
 .PHONY: all build push _realPush
 
 #---
 echo:
 	@echo ${PROJECT_ID}
-
