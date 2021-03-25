@@ -56,9 +56,8 @@ USER ${USER}
     # $ pwd
     # /project
 
-#ENTRYPOINT ["npm"]
-
-
+# Don't define an 'ENTRYPOINT' since we provide multiple ('firebase', 'npm'). Cloud Build scripts can choose one.
+#ENTRYPOINT ['no']
 
 #---
 #STASH: # lulichn/firebase-tools had this:

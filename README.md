@@ -117,12 +117,40 @@ db809908a198: Layer already exists
 9.6.0-node14: digest: sha256:97f17c562507799c6b52786147d70aa56c848ee2d67eff590aa567d7a9b1c019 size: 2003
 ```
 
+### Pushing `latest`
+
+The above instructions (and the `Makefile`) only push a *tagged* image. 
+
+If you want, you can also push one with tag `latest`. This allows your users to get a default version.
+
+```
+$ PROJECT_ID=..fill in..
+$ docker tag firebase-custom-builder:9.6.0-node14 eu.gcr.io/$PROJECT_ID/firebase-custom-builder:latest
+$ docker push eu.gcr.io/$PROJECT_ID/firebase-custom-builder:latest
+The push refers to repository [eu.gcr.io/groundlevel-160221/firebase-custom-builder]
+8962ccd62f6e: Layer already exists 
+e53a3c030bdb: Layer already exists 
+b05570e678df: Layer already exists 
+1952ae150c4a: Layer already exists 
+aedafbecb0b3: Layer already exists 
+db809908a198: Layer already exists 
+1b235e8e7bda: Layer already exists 
+3e207b409db3: Layer already exists 
+latest: digest: sha256:8344e59785e1a74eaf00708fdb8522bb098beec7f440f407abcfc601d2e4d6b4 size: 2003
+```
+
 ## Using the image
 
 You can now use the image eg. in Cloud Build as:
 
 ```
 eu.gcr.io/<your-project-id>/firebase-custom-builder:9.6.0-node14
+```
+
+If you pushed the `latest` tag, you can leave out the tag at the end:
+
+```
+eu.gcr.io/<your-project-id>/firebase-custom-builder
 ```
 
 

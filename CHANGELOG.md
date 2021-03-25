@@ -1,5 +1,9 @@
 # Changelog
 
+## 25-Mar-2021
+
+- Documenting: Notion about pushing the `latest` image.
+
 ## 23-Mar-2021
 
 Found this in excavations, and took it to use!

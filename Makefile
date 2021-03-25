@@ -27,7 +27,7 @@ _LOCAL_NAME=${_IMAGE_NAME}:${_TAG}
 #
 _GCR_IO=eu.gcr.io
 
-_GCR_NAME=${_GCR_IO}/${PROJECT_ID}/${_IMAGE_NAME}:${_TAG}
+_GCR_NAME_TAGGED=${_GCR_IO}/${PROJECT_ID}/${_IMAGE_NAME}:${_TAG}
 	# PROJECT_ID defined by 'make push', as a recursive call.
 
 #---
@@ -38,11 +38,13 @@ build:
 
 # Force a rebuild each time. Makes it simpler/safer and Docker is rather fast if things are already cached.
 #
+# Note: We only push the _tagged_ name. If you want, you can push ':latest' manually.
+#
 push: build
 	PROJECT_ID=$(shell gcloud config get-value project 2>/dev/null) ${MAKE} _realPush
 _realPush:
-	docker tag ${_LOCAL_NAME} ${_GCR_NAME}
-	docker push ${_GCR_NAME}
+	docker tag ${_LOCAL_NAME} ${_GCR_NAME_TAGGED}
+	docker push ${_GCR_NAME_TAGGED}
 
 .PHONY: all build push _realPush
 
