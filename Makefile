@@ -14,7 +14,7 @@ NODE_IMAGE_TAG=lts-alpine
 FIREBASE_VERSION=9.6.0
 
 _IMAGE_NAME=firebase-custom-builder
-_TAG=${FIREBASE_VERSION}-node14
+_TAG?=${FIREBASE_VERSION}-node14
 
 _LOCAL_NAME=${_IMAGE_NAME}:${_TAG}
 
@@ -45,6 +45,9 @@ push: build
 _realPush:
 	docker tag ${_LOCAL_NAME} ${_GCR_NAME_TAGGED}
 	docker push ${_GCR_NAME_TAGGED}
+
+push-latest: build
+	PROJECT_ID=$(shell gcloud config get-value project 2>/dev/null) _TAG=latest ${MAKE} _realPush
 
 .PHONY: all build push _realPush
 

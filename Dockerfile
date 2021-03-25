@@ -20,6 +20,9 @@ ENV FIREBASE_VERSION 9.6.0
 ENV HOME /project
 ENV USER user
 
+# Maybe we want to update 'npm'? (6.14.6 -> 7.7.4; 25-Mar-21)
+RUN npm install -g npm
+
 RUN apk --no-cache add openjdk11-jre bash && \
   yarn global add firebase-tools@${FIREBASE_VERSION} && \
   yarn cache clean
