@@ -4,6 +4,8 @@
 
 - Leaving `root` as the user; eliminates Cloud Build problems. 🙂
 - Updated to Firebase CLI v. 9.6.1
+- Added `sed`, `curl`
+- Updated to `npm` 7.x (7.7.5)
 
 ## 25-Mar-2021
 

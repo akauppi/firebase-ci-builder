@@ -5,13 +5,15 @@
 #   - 'firebase' CLI tools
 #   - emulators
 #   - node.js and npm
+#   - bash
+#   - sed, curl
 #
 # Note:
-#   Cloud Build (beta 2021.03.19) seems to strongly prefer that the builder image has root as its user; not a dedicated
-#   user! Otherwise, one gets all kinds of access right errors with '/builders/home/.npm' and related files.
+#   Cloud Build requires that the builder image has 'root' rights; not a dedicated user.
+#   Otherwise, one gets all kinds of access right errors with '/builders/home/.npm' and related files.
 #
-#   There is no damage or risk, leaving the builder image with root, so the user/home related lines have been
-#   permanently disabled by '#|' prefix.
+#   This is fine. There is no damage or risk, leaving the builder image with root, so the user/home related lines have
+#   been permanently disabled by '#|' prefix.
 #
 # References:
 #   - Best practices for writing Dockerfiles
@@ -23,9 +25,7 @@
 #
 # As of Mar'21:
 #   "current-alpine": 15.12.0
-#   "lts-alpine": 14.16.0
-#   "15-alpine"
-#   "14-alpine"
+#   "lts-alpine": 14.16.0 (npm 6.14.11)
 #
 # Note: IF YOU CHANGE THIS, change the '-nodeXX' suffix within 'Makefile'.
 #
@@ -45,6 +45,10 @@ ENV _FIREBASE_VERSION ${FIREBASE_VERSION}
 #|ENV USER user
 #|ENV GROUP mygroup
 
+# Add 'npm' 7. It's needed by the first customer of this image and seems stable. (you don't want it - remove the lines?)
+#
+RUN npm install -g npm
+
 RUN apk --no-cache add openjdk11-jre bash && \
   yarn global add firebase-tools@${FIREBASE_VERSION} && \
   yarn cache clean
@@ -62,9 +66,11 @@ RUN firebase setup:emulators:database && \
 # = note that Firestore, Firebase emulators don't uncompress but PubSub does (and is distributed as a zip).
 #   To see whether we can reduce the image size, one could uncompress those and remove the '.jar' files. #later????
 
-RUN firebase --version && \
-  java -version && \
-  node --version
+# Auxiliary tools; The '-alpine' base image is based on 'busybox' and doesn't have these.
+#
+RUN apk --no-cache add \
+  sed \
+  curl
 
 #|# Be eventually a user rather than root
 #|#

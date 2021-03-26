@@ -9,8 +9,8 @@ FIREBASE_VERSION=9.6.1
 
 _IMAGE_NAME=firebase-custom-builder
 
-# Note: '-node14' is NOT connected with what the base image in 'Dockerfile' provides. MAINTAIN MANUALLY!!!
-_TAG=${FIREBASE_VERSION}-node14
+# Note: '-node14-npm7' is NOT connected with what the base image in 'Dockerfile' provides. MAINTAIN MANUALLY!!!
+_TAG=${FIREBASE_VERSION}-node14-npm7
 
 _LOCAL_NAME=${_IMAGE_NAME}:${_TAG}
 

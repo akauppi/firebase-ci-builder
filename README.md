@@ -6,9 +6,22 @@ Docker image for projects needing to run Firebase CLI, `npm` and Firebase emulat
 
 - `firebase-tools` & emulators (*)
   - OpenJDK 11
-- `npm` and node.js 14
+- node.js 14 (LTS)
+- `npm` 6.x
 
 (*) These emulators are pre-fetched: `database`, `firestore`, `pubsub`.
+
+The image is based on [BusyBox](https://en.wikipedia.org/wiki/BusyBox). 
+
+We add some command line comfort:
+
+||version|
+|---|---|
+|`bash`|v.5.0.11+|
+|`sed`|GNU sed 4.7+|
+|`curl`|7.67.0+|
+
+Naturally, you may add more by deriving the Dockerfile or installing tools as part of the CI/CD steps. `apk --no-cache add xyz`
 
 **Other images**
 
