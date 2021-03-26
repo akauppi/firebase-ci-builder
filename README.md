@@ -21,7 +21,7 @@ We add some command line comfort:
 |`sed`|GNU sed 4.7+|
 |`curl`|7.67.0+|
 
-Naturally, you may add more by deriving the Dockerfile or installing tools as part of the CI/CD steps. `apk --no-cache add xyz`
+Naturally, you may add more by deriving the Dockerfile or just forking it.
 
 **Other images**
 
