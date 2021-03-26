@@ -1,5 +1,10 @@
 # Changelog
 
+## 26-Mar-2021
+
+- Leaving `root` as the user; eliminates Cloud Build problems. 🙂
+- Updated to Firebase CLI v. 9.6.1
+
 ## 25-Mar-2021
 
 - Documenting: Notion about pushing the `latest` image.

@@ -5,7 +5,7 @@
 #	- gcloud
 #	- docker
 #
-FIREBASE_VERSION=9.6.0
+FIREBASE_VERSION=9.6.1
 
 _IMAGE_NAME=firebase-custom-builder
 

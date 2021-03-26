@@ -6,6 +6,13 @@
 #   - emulators
 #   - node.js and npm
 #
+# Note:
+#   Cloud Build (beta 2021.03.19) seems to strongly prefer that the builder image has root as its user; not a dedicated
+#   user! Otherwise, one gets all kinds of access right errors with '/builders/home/.npm' and related files.
+#
+#   There is no damage or risk, leaving the builder image with root, so the user/home related lines have been
+#   permanently disabled by '#|' prefix.
+#
 # References:
 #   - Best practices for writing Dockerfiles
 #       -> https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
@@ -25,11 +32,18 @@
 FROM node:lts-alpine
 
 # Version of 'firebase-tools' is also our version
+#
+# tbd. Is there a benefit placing it also in 'env'? eg. seeing the build parameters of an image, later?
+#
 ARG FIREBASE_VERSION
-ENV FIREBASE_VERSION 9.6.0
+ENV _FIREBASE_VERSION ${FIREBASE_VERSION}
 
-ENV HOME /project
-ENV USER user
+#|# It should not matter where the home is, but based on an error received with Cloud Build (beta 2021.03.19),
+#|# the commands it excercises seem to expect to be able to 'mkdir' a folder within '/builder/home'.
+#|#
+#|ENV HOME /builder/home
+#|ENV USER user
+#|ENV GROUP mygroup
 
 RUN apk --no-cache add openjdk11-jre bash && \
   yarn global add firebase-tools@${FIREBASE_VERSION} && \
@@ -52,23 +66,24 @@ RUN firebase --version && \
   java -version && \
   node --version
 
-# Be eventually a user rather than root
-#
-RUN addgroup -S mygroup && adduser -S ${USER} -G mygroup && \
-  mkdir -p ${HOME} && \
-  chown -R ${USER} ${HOME}
+#|# Be eventually a user rather than root
+#|#
+#|RUN addgroup -S ${GROUP} && adduser -S ${USER} -G mygroup && \
+#|  mkdir -p ${HOME} && \
+#|  chown -R ${USER}:${GROUP} ${HOME}
 
-WORKDIR ${HOME}
+#|WORKDIR ${HOME}
 
-# Now changing to user (no more root)
-USER ${USER}
-    # $ whoami
-    # user
-    # $ pwd
-    # /project
+#|# Now changing to user (no more root)
+#|USER ${USER}
+#|   # $ whoami
+#|   # user
+
+#|# Create '${HOME}/.npm' (as a user); trying to avoid access errors with Cloud Build.
+#|#
+#|RUN mkdir ${HOME}/.npm
 
 # Don't define an 'ENTRYPOINT' since we provide multiple ('firebase', 'npm'). Cloud Build scripts can choose one.
-#ENTRYPOINT ['no']
 
 #---
 #STASH: # lulichn/firebase-tools had this:
