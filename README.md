@@ -151,6 +151,75 @@ db809908a198: Layer already exists
 latest: digest: sha256:8344e59785e1a74eaf00708fdb8522bb098beec7f440f407abcfc601d2e4d6b4 size: 2003
 ```
 
+### Managing the images (= costs 💵💶!)
+
+The data you push to the cloud is kept at Cloud Registry and creates costs simply by taking space. It's good to understand what's pushed, where, with what parameters and have a cleanup strategy.
+
+>![](.images/gcs-containers-images.png)
+
+Your images end up crowding the bucket:
+
+GCP Console > Storage > `eu.artifacts.<project-id>.appspot.com` > `containers` > `images`
+
+The screenshot is after the bucket was cleared (`DELETE`) and *one* image was pushed. Your image layers likely each occupy a single file, here.
+
+<!-- not relevant?
+#### Save the Penny 
+
+The bucket is created automatically, as a "multiregion" bucket (those cost more than single-region ones). If this is overkill for you (as a hobbyist), here are things you can do:
+
+- [change Container Registry to use a single region](...)
+
+   TL;DR Remove the bucket. Recreate with single region.
+-->
+
+#### Container Registry Pricing
+
+See -> [Container Registry pricing](https://cloud.google.com/container-registry/pricing)
+
+>The price for Standard buckets in a multi-region is about $0.026 per GB per month.
+
+i.e. for keeping a single 557MB image, it's ~0,01 € / month.
+
+Cloud Build (in wait of regional builders) runs in the U.S. and *each build* pulls in the image, anew, from say EU. This falls into the "*Data moves between different continents and neither is Australia.*" bucket ;) of pricing.
+
+For this, [general network usage](https://cloud.google.com/storage/pricing#network-egress) is applied. Since we are in the EU, no free tier (5GB) (it only applies to certain US regions).
+
+$0.12 / GB
+
+This means - if the author understood the pricing right - that *each build* you run with Cloud Build (in the US) costs ~0.10 EUR.
+
+Is this much?
+
+50 builds for 5 eur.
+
+Now consider that each PR means a build - or multiple, depending on what you change. Each change to a PR also means a build - or multiple. When you merge the PR, one or two more builds. These add up.
+
+It's still limited by the source of the CI/CD events being humans, but something like 1000 builds per month might not be out of question. That would be 100 eur or so.
+
+#### Counter-acting
+
+The obvious way is to avoid the over-the-ocean shipment of data. This could be done in three ways:
+
+- Push everything to the US (since the builds happen there)
+
+   This is a sensible strategy. It's just that the author wants to do things "right" (environmental concerns and so forth) and keep things local. Transmissions do raise CO2 emissions.
+
+	>Note that the CO2 argument doesn't really hold here. Shipping the *sources* is about 500kB (for the author's project) and pushing a new builder image happens rarely. The output size - again - is smallish, so deploying from the US to EU would not be costly. So my earlier point is moot, and it's just about pride. :D
+
+- Caching of the images, on the US side
+
+   It seems unnecessary that Cloud Build re-fetches the whole builder image, again and again, for each build. If I can easily set up a caching of eg. "keep builder images for 6 hours", that likely reduces the ocean crossings (and costs) by 5..10x.
+
+- Regional builds
+
+   Such have been asked for, for a few years.
+   
+   The author would welcome this option.
+
+Note that this decision has nothing to do with GDPR, because we are not handling customer data, only building of the tools that will (which will again run in the EU).
+
+
 ## Using the image
 
 You can now use the image eg. in Cloud Build as:
