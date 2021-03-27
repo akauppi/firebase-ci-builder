@@ -2,11 +2,9 @@
 # Dockerfile for Firebase CI testing
 #
 # Provides:
-#   - 'firebase' CLI tools
-#   - emulators
-#   - node.js and npm
-#   - bash
-#   - sed, curl
+#   - 'firebase CLI, with emulators pre-installed
+#   - node.js and npm >=7.7.0
+#   - bash, curl
 #
 # Note:
 #   Cloud Build requires that the builder image has 'root' rights; not a dedicated user.
@@ -49,27 +47,46 @@ ENV _FIREBASE_VERSION ${FIREBASE_VERSION}
 #
 RUN npm install -g npm
 
-RUN apk --no-cache add openjdk11-jre bash && \
-  yarn global add firebase-tools@${FIREBASE_VERSION} && \
-  yarn cache clean
+RUN apk --no-cache add openjdk11-jre bash
 
-RUN firebase setup:emulators:database && \
-  firebase setup:emulators:firestore && \
-  firebase setup:emulators:pubsub
+RUN yarn global add firebase-tools@${FIREBASE_VERSION} \
+  && yarn cache clean
 
-# ls -1 .cache/firebase/emulators/
-#   cloud-firestore-emulator-v1.11.12.jar
-#   firebase-database-emulator-v4.7.2.jar
-#   pubsub-emulator-0.1.0
-#   pubsub-emulator-0.1.0.zip
+# Include all products that have a 'firebase setup:emulators:...' step (except 'ui' since we don't need interactive UI).
 #
-# = note that Firestore, Firebase emulators don't uncompress but PubSub does (and is distributed as a zip).
-#   To see whether we can reduce the image size, one could uncompress those and remove the '.jar' files. #later????
+# Realtime database   v4.7.2.jar
+# Firestore           v1.11.12.jar
+# Pub/Sub             0.1.0 (folder and .zip; which matters for caching?)
+#
+# NOTE: The caching goes to '/root/.cache', under the home of this image.
+#   Cloud Build (as of 27-Mar-21) does NOT respect the image's home, but places one in '/builder/home', instead.
+#   More importantly, it seems to overwrite existing '/builder/home' contents, leaving us little option other than
+#   have the _consuming build script_ do 'RUN ln -s /root/.cache ~/' or similar, to move the cache where it must be.
+#
+#   We could work with the Cloud Build team(?) to make this less arduous.
+#
+# @Firebase:
+#   - what is the best caching policy in a prefabricated image like this (we wish to not need to load and install
+#     emulators *ever* in running the container; can that be restricted?); would rather fail a build and need to
+#     update the builder image.
+#   - [ ] can we remove either the 'pubsub' folder, or the zip file? Why are both cached (isn't that wasteful; 37.9MB
+#         for the folder; 34.9MB for the .zip).
+#   - ![ ]! How to place files so that Cloud Build would not override those (and they would "just work" for the application
+#         build).
+#
+RUN firebase setup:emulators:database \
+  && firebase setup:emulators:firestore \
+  && firebase setup:emulators:pubsub
+  #
+  # $ ls .cache/firebase/emulators/
+  #   firebase-database-emulator-v4.7.2.jar
+  #   cloud-firestore-emulator-v1.11.12.jar
+  #   pubsub-emulator-0.1.0
+  #   pubsub-emulator-0.1.0.zip
 
 # Auxiliary tools; The '-alpine' base image is based on 'busybox' and doesn't have these.
 #
 RUN apk --no-cache add \
-  sed \
   curl
 
 #|# Be eventually a user rather than root

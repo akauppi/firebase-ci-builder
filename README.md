@@ -18,7 +18,6 @@ We add some command line comfort:
 ||version|
 |---|---|
 |`bash`|v.5.0.11+|
-|`sed`|GNU sed 4.7+|
 |`curl`|7.67.0+|
 
 Naturally, you may add more by deriving the Dockerfile or just forking it.
@@ -157,14 +156,31 @@ latest: digest: sha256:8344e59785e1a74eaf00708fdb8522bb098beec7f440f407abcfc601d
 You can now use the image eg. in Cloud Build as:
 
 ```
-eu.gcr.io/<your-project-id>/firebase-custom-builder:9.6.0-node14
+eu.gcr.io/$PROJECT_ID/firebase-custom-builder:9.6.0-node14
 ```
 
 If you pushed the `latest` tag, you can leave out the tag at the end:
 
 ```
-eu.gcr.io/<your-project-id>/firebase-custom-builder
+eu.gcr.io/$PROJECT_ID/firebase-custom-builder
 ```
+
+>Note: You can leave `$PROJECT_ID` in the `cloudbuild.yaml`. Cloud Build knows to replace it with the current GCP project.
+
+---
+
+>**❗️IMPORTANT NOTE:**
+>
+>Emulator images are left in the `/root/.cache` folder. In order for you to benefit from them (so that running emulators won't refetch the packages, for each build), you must do this step before running the emulators.
+>
+>```
+>- name: eu.gcr.io/$PROJECT_ID/firebase-custom-builder
+  entrypoint: bash
+  args: ['-c', 'mv /root/.cache ~/.cache']
+>```
+>Cloud Build replaces the home directory with `/builder/home` and *does not keep* existing contents in such a folder. This is not good manners; we'd rather it would respect the image's premade Home.
+
+---
 
 
 ## References
