@@ -14,14 +14,14 @@ _TAG=${FIREBASE_VERSION}-node14-npm7
 
 _LOCAL_NAME=${_IMAGE_NAME}:${_TAG}
 
-# Container Registry images are in one of:
+# Use plain 'gcr.io' unless your Cloud Build is regional. In that case:
 #	asia.gcr.io
 #	eu.gcr.io
 #	us.gcr.io (same as plain gcr.io)
 #
 # Source: https://cloud.google.com/container-registry/docs/pushing-and-pulling
 #
-_GCR_IO=eu.gcr.io
+_GCR_IO=gcr.io
 
 # Lazy evaluation trick
 #FOO = $(eval FOO := expensive-to-evaluate)$(FOO)

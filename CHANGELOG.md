@@ -1,5 +1,9 @@
 # Changelog
 
+## 30-Mar-2021
+
+- Changed to recommending non-regional Container Registry (`gcr.io`) in all cases.
+
 ## 27-Mar-2021
 
 - **FIX**: Preloaded emulator packages were not used. Tried solving this, but cannot since Cloud Build **rudely** overrides the home directory, and removes anything we would have placed there. 
