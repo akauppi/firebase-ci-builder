@@ -1,5 +1,10 @@
 # Changelog
 
+## 21-May-2021
+
+- **REWORK**: Added `ONBUILD` step so user scripts don't need to move the cached emulator files
+- Upgraded to Firebase tools 9.11.0 and Node.js 16.
+
 ## 30-Mar-2021
 
 - Changed to recommending non-regional Container Registry (`gcr.io`) in all cases.

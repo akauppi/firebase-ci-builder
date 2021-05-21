@@ -13,7 +13,7 @@ $ docker image inspect node:lts-alpine
 ## Environment variables while Cloud Build runs the container
 
 ```
-Step #1: HOSTNAME=5fb22adb1a4e
+Step #1: HOSTNAME=5fb2....1a4e
 Step #1: _FIREBASE_VERSION=9.6.1  <-- set by us
 Step #1: YARN_VERSION=1.22.5
 Step #1: PWD=/workspace

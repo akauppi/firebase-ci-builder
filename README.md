@@ -1,15 +1,15 @@
-# firebase-custom-builder
+# firebase-ci-builder
 
 Docker image for projects needing to run Firebase CLI, `npm` and Firebase emulation (which requires Java).
 
 **Provides**
 
 - `firebase-tools` & emulators (*)
-  - OpenJDK 11
-- node.js 14 (LTS)
-- `npm` 7.7.x
+- OpenJDK 11
+- node.js 16
+- `npm` 7.13.x
 
-(*) Emulator packages are pre-fetched (except `ui`).
+   <small>(*) pre-fetched, except `ui`</small>
 
 The image is based on [BusyBox](https://en.wikipedia.org/wiki/BusyBox). 
 
@@ -17,14 +17,12 @@ We add some command line comfort:
 
 ||version|
 |---|---|
-|`bash`|v.5.0.11+|
-|`curl`|7.67.0+|
+|`bash`|v.5.1.0+|
+|`curl`|7.76.1+|
 
 Naturally, you may add more by deriving the Dockerfile or just forking it and editing to your liking.
 
 **Other images**
-
-There are [many images](https://hub.docker.com/search?q=firebase&type=image) for Firebase in Docker Hub but they seem to be made for personal use, and don't e.g. track tooling upgrades. They may also sport some project specific libraries which makes them unsuitable as a base image. The idea is to gather that momentum together so if you have your own, please consider using this instead for a stronger Firebase testing community.
 
 - Community [Firebase image](https://github.com/GoogleCloudPlatform/cloud-builders-community/tree/master/firebase)
 
@@ -36,21 +34,40 @@ There are [many images](https://hub.docker.com/search?q=firebase&type=image) for
  
   This repo is mentioned as a foundation having both Java and Node. However, the author faced problems building it (23-Mar-21). Being based on "Azul" OpenJDK image wasn't reaffirming for general use, either. 
 
-  The repo takes a JDK/JRE base image and installs Node on top of it. This repo does the opposite: takes a Node base image and installs Java on top of that.
+  The repo takes a JDK/JRE base image and installs Node on top of it.
 
-
----
+**Approach**
 
 Publishing Docker images may be costly (you are charged by the downloads, and images are big), so the approach taken here is that you build the image on your own, and push it to a private repo that *your* projects use.
 
 This certainly works for the author.
-
 
 ## Requirements
 
 - Docker
 - GNU `make`
 - `gcloud` CLI
+
+---
+
+- <details><summary>*Installing `gcloud` on macOS...*</summary>
+   
+   1. Download the package from [official installation page](https://cloud.google.com/sdk/docs/install)
+   2. Extract in the downloads folder, but then..
+   3. Move `google-cloud-sdk` to a location where you'd like it to remain (e.g. `~/bin`).
+   
+      When you run the install script, the software is installed *in place*. You cannot move it around any more.
+      
+   4. From here, you can follow the official instructions:
+
+      `./google-cloud-sdk/install.sh`
+
+      `./google-cloud-sdk/bin/gcloud init`
+   </details>
+
+   To update: `gcloud components update`
+
+---
 
 Recommended (optional):
 
@@ -74,11 +91,11 @@ $ make build
 Successfully built 29a6e8655e16
 ```
 
-It should result in an image of ~557 <!--was:~706, ~679--> MB in size, containing:
+It should result in an image of ~533 <!--was:~557, ~706, ~679--> MB in size, containing:
 
 - JDK
 - `firebase` CLI
-- `node`, `npm` and `yarn`
+- `node`, `npm` <font color=lightgray><sub><sub><sup>and `yarn`</sup></sub></sub></font>
 - Root as the user
 - Home directory `/root`
 - Emulator images in `.cache/firebase/emulators/`
@@ -86,23 +103,21 @@ It should result in an image of ~557 <!--was:~706, ~679--> MB in size, containin
 You can check the size by:
 
 ```
-$ docker image ls firebase-custom-builder:9.6.0-node14
-REPOSITORY                TAG                 IMAGE ID            CREATED             SIZE
-firebase-custom-builder                                                     9.6.1-node14-npm7     b7e912f71ea3   2 days ago     557MB
+$ docker image ls firebase-ci-builder:9.6.1-node16
+REPOSITORY            TAG                  IMAGE ID       CREATED         SIZE
+firebase-ci-builder   9.11.0-node16-npm7   90e213f2a93d   6 minutes ago   533MB
 ```
 
 
-## Push to...
-
-### Container Registry (Google Cloud)
+## Push to the cloud
 
 ---
 
->NOTE: Do NOT think of uploading to a regional Container Registry, if you plan to use Cloud Build. Cloud Build runs in the US region and it would fetch your custom builder image separately for each *build*. Egress costs for inter-region transport of 500MB is about 0.10 eur (if the author calculated right).
+>NOTE: Do NOT think of uploading to a regional Container Registry, if you plan to use Cloud Build. Cloud Build runs in the US region and it would fetch your custom builder image separately for each *build*. Egress costs for inter-region transport of 500MB is about 0.10 eur.
 >
 >Instead, push the image once to the US Container Registry. Cloud Build gets it fast, does its job and can deploy to any region. Since your code is involved, not data, this should be outside of GDPR domain (no guarantees, author's opinion). 
 >
->Counter note: If you set up a [worker pool](https://cloud.google.com/sdk/gcloud/reference/alpha/builds/worker-pools/create), you can run Cloud Build within the region. You probably know the drills if you're doing such.
+>Counter note: If you set up a [worker pool](https://cloud.google.com/sdk/gcloud/reference/alpha/builds/worker-pools/create), you can run Cloud Build within the region. You probably know the drill if you're doing such.
 >
 >You can follow the discussion here: [FR: Select build region](https://issuetracker.google.com/issues/63480105) (Google IssueTracker)
 
@@ -117,37 +132,37 @@ some-230321
 
 Push the built image to Container Registry:
 
-<!-- NOT true - see above
-This should ideally be close to where your builds happen. See GCR > [Pushing and pulling](https://cloud.google.com/container-registry/docs/pushing-and-pulling).
-
-Prefix the command then with `_GCR_IO=[asia|eu|us].gcr.io`, according to your needs.
--->
+>This pushes to `gcr.io`. If you know you want another registry, see the `Makefile`.
 
 ```
 $ make push
-docker build --build-arg FIREBASE_VERSION=9.6.0 . -t firebase-custom-builder:9.6.0-node14
+docker build --pull --build-arg FIREBASE_VERSION=9.11.0 . -t firebase-ci-builder:9.11.0-node16-npm7
+[+] Building 0.8s (9/9) FINISHED                                                                                                                                                                                                                          
 ...
-Successfully built 6e84ee9f7a74
-Successfully tagged firebase-custom-builder:9.6.0-node14
-docker tag firebase-custom-builder:9.6.0-node14 gcr.io/groundlevel-160221/firebase-custom-builder:9.6.0-node14
-docker push gcr.io/groundlevel-160221/firebase-custom-builder:9.6.0-node14
-The push refers to repository [gcr.io/groundlevel-160221/firebase-custom-builder]
-7d5805f5a13c: Pushed 
-493987b335c5: Pushed 
-09bb4df3245b: Pushed 
-a9f0fd5d0c5e: Pushed 
-aedafbecb0b3: Layer already exists 
-db809908a198: Layer already exists 
-1b235e8e7bda: Layer already exists 
-3e207b409db3: Layer already exists 
-9.6.0-node14: digest: sha256:97f17c562507799c6b52786147d70aa56c848ee2d67eff590aa567d7a9b1c019 size: 2003
+
+Use 'docker scan' to run Snyk tests against images to find vulnerabilities and learn how to fix them
+/Library/Developer/CommandLineTools/usr/bin/make _realPush
+docker tag firebase-ci-builder:9.11.0-node16-npm7 gcr.io/groundlevel-160221/firebase-ci-builder:9.11.0-node16-npm7
+docker push gcr.io/groundlevel-160221/firebase-ci-builder:9.11.0-node16-npm7
+The push refers to repository [gcr.io/groundlevel-160221/firebase-ci-builder]
+efd4b6737905: Pushed 
+b82e4a3f1bb0: Pushed 
+43fcfe48be7e: Pushed 
+59b893fe3d1a: Pushed 
+10240d23865e: Layer already exists 
+51b98edbb053: Layer already exists 
+01853fbda02d: Layer already exists 
+b2d5eeeaba3a: Layer already exists 
+9.11.0-node16-npm7: digest: sha256:e59a64f5a7809024530a11482cdf25bb70d8d8db0cb8647be8f8cb62e343d4d7 size: 2005
 ```
 
-### Pushing `latest`
+### Pushing `latest` (optional)
 
 The above instructions (and the `Makefile`) only push a *tagged* image. 
 
-If you want, you can also push one with tag `latest`. This allows your users to get a default version.
+If you want, you can also push one with tag `latest`. This allows your users to get a default version, but the author thinks this is not needed / recommended practise.
+
+>Why? The use is in CI/CD pipelines, and there it's best to explicitly state the versions of the tools needed, i.e. use a tagged image.
 
 ```
 $ make push-latest
@@ -155,22 +170,13 @@ $ make push-latest
 PUSH_TAG=latest /Library/Developer/CommandLineTools/usr/bin/make _realPush
 docker tag firebase-custom-builder:9.6.1-node14-npm7 gcr.io/groundlevel-160221/firebase-custom-builder:latest
 docker push gcr.io/groundlevel-160221/firebase-custom-builder:latest
-The push refers to repository [gcr.io/groundlevel-160221/firebase-custom-builder]
-0395faaea2c5: Pushed 
-fb5c236daec5: Pushed 
-f5ec0d381d42: Pushed 
-5e2059ad91ce: Pushed 
-a845e457894d: Pushed 
-d733bd4967fd: Layer already exists 
-d6c10d5ad47a: Layer already exists 
-50643cb11b15: Layer already exists 
-b3e46aac4e11: Layer already exists 
-latest: digest: sha256:deb3ec11c0ef7763b21b3546f14d76f08db95de7313b3337875c55e0e4645028 size: 2216
+...
 ```
 
-### Container Registry Pricing
+>Note: We might remove the `push-latest` target since the use case for `latest` is shaky.
 
-See -> [Container Registry pricing](https://cloud.google.com/container-registry/pricing)
+
+### [Container Registry Pricing](https://cloud.google.com/container-registry/pricing)
 
 The price for Standard buckets in a multi-region is about $0.026 per GB per month.
 i.e. for keeping a single 557MB image, it's ~0,01 € / month.
@@ -183,20 +189,19 @@ It is good to occasionally remove unneeded files from the Container Registry. Th
 You can now use the image eg. in Cloud Build as:
 
 ```
-gcr.io/$PROJECT_ID/firebase-custom-builder:9.6.0-node14
+gcr.io/$PROJECT_ID/firebase-ci-builder:9.6.1-node14
 ```
 
-If you pushed the `latest` tag, you can leave out the tag at the end:
+>If you pushed the `latest` tag, you can leave out the tag at the end.
 
-```
-gcr.io/$PROJECT_ID/firebase-custom-builder
-```
+<p></p>
 
 >Note: You can leave `$PROJECT_ID` in the `cloudbuild.yaml`. Cloud Build knows to replace it with the current GCP project.
 
+<!-- remove?
 ---
 
->**❗️IMPORTANT NOTE:**
+>###❗️IMPORTANT NOTE:
 >
 >Emulator images are left in the `/root/.cache` folder. In order for you to benefit from them (so that running emulators won't refetch the packages, for each build), you must do this step before running the emulators.
 >
@@ -208,7 +213,7 @@ gcr.io/$PROJECT_ID/firebase-custom-builder
 >Cloud Build replaces the home directory with `/builder/home` and *does not keep* existing contents in such a folder. This is not good manners; we'd rather it would respect the image's premade home.
 
 ---
-
+-->
 
 ## References
 

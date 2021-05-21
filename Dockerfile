@@ -2,7 +2,7 @@
 # Dockerfile for Firebase CI testing
 #
 # Provides:
-#   - 'firebase CLI, with emulators pre-installed
+#   - 'firebase' CLI, with emulators pre-installed
 #   - node.js and npm >=7.7.0
 #   - bash, curl
 #
@@ -21,13 +21,17 @@
 # Node images
 #   -> https://hub.docker.com/_/node
 #
+# As of May'21:
+#   "current-alpine": 16.2.0
+#   "16-alpine": 16.2.0 (npm 7.13.0)
+#
 # As of Mar'21:
 #   "current-alpine": 15.12.0
 #   "lts-alpine": 14.16.0 (npm 6.14.11)
 #
 # Note: IF YOU CHANGE THIS, change the '-nodeXX' suffix within 'Makefile'.
 #
-FROM node:lts-alpine
+FROM node:16-alpine
 
 # Version of 'firebase-tools' is also our version
 #
@@ -43,9 +47,8 @@ ENV _FIREBASE_VERSION ${FIREBASE_VERSION}
 #|ENV USER user
 #|ENV GROUP mygroup
 
-# Add 'npm' 7. It's needed by the first customer of this image and seems stable. (you don't want it - remove the lines?)
-#
-RUN npm install -g npm
+# Add 'npm' 7. It's needed by the first customer of this image and seems stable. (you don't want it - remove the line?)
+#RUN npm install -g npm
 
 RUN apk --no-cache add openjdk11-jre bash
 
@@ -54,19 +57,19 @@ RUN yarn global add firebase-tools@${FIREBASE_VERSION} \
 
 # Include all products that have a 'firebase setup:emulators:...' step (except 'ui' since we don't need interactive UI).
 #
-# Realtime database   v4.7.2.jar
-# Firestore           v1.11.12.jar
-# Pub/Sub             0.1.0 (folder and .zip; which matters for caching?)
+#   - Realtime database
+#   - Firestore
+#   - Pub/Sub (folder and .zip; which matters for caching?)
 #
 # NOTE: The caching goes to '/root/.cache', under the home of this image.
 #   Cloud Build (as of 27-Mar-21) does NOT respect the image's home, but places one in '/builder/home', instead.
-#   More importantly, it seems to overwrite existing '/builder/home' contents, leaving us little option other than
-#   have the _consuming build script_ do 'RUN ln -s /root/.cache ~/' or similar, to move the cache where it must be.
+#   More importantly, it seems to overwrite existing '/builder/home' contents, ~~~leaving us little option other than
+#   have the _consuming build script_ do 'RUN ln -s /root/.cache ~/' or similar, to move the cache where it must be.~~~ tbd. edit
 #
-#   We could work with the Cloud Build team(?) to make this less arduous.
+#   We could work with the Cloud Build team to make this less arduous.
 #
 # @Firebase:
-#   - what is the best caching policy in a prefabricated image like this (we wish to not need to load and install
+#   - what is the best caching policy in a pre-fabricated image like this (we wish to not need to load and install
 #     emulators *ever* in running the container; can that be restricted?); would rather fail a build and need to
 #     update the builder image.
 #   - [ ] can we remove either the 'pubsub' folder, or the zip file? Why are both cached (isn't that wasteful; 37.9MB
@@ -80,7 +83,7 @@ RUN firebase setup:emulators:database \
   #
   # $ ls .cache/firebase/emulators/
   #   firebase-database-emulator-v4.7.2.jar
-  #   cloud-firestore-emulator-v1.11.12.jar
+  #   cloud-firestore-emulator-v1.11.15.jar
   #   pubsub-emulator-0.1.0
   #   pubsub-emulator-0.1.0.zip
 
@@ -106,10 +109,8 @@ RUN apk --no-cache add \
 #|#
 #|RUN mkdir ${HOME}/.npm
 
-# Don't define an 'ENTRYPOINT' since we provide multiple ('firebase', 'npm'). Cloud Build scripts can choose one.
-
-#---
-#STASH: # lulichn/firebase-tools had this:
+# EXPERIMENTAL: Move the emulator images to '~/.cache' within the derived image that Cloud Build creates.
 #
-#RUN apk add --no-cache --virtual .gyp python make g++ \
-#	&& apk del .gyp
+ONBUILD RUN mv /root/.cache ~/
+
+# Don't define an 'ENTRYPOINT' since we provide multiple ('firebase', 'npm'). Cloud Build scripts can choose one.

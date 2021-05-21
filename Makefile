@@ -5,22 +5,17 @@
 #	- gcloud
 #	- docker
 #
-FIREBASE_VERSION=9.6.1
+# Firebase CLI ('firebase-tools')
+FIREBASE_VERSION=9.11.0
 
-_IMAGE_NAME=firebase-custom-builder
+_IMAGE_NAME=firebase-ci-builder
 
-# Note: '-node14-npm7' is NOT connected with what the base image in 'Dockerfile' provides. MAINTAIN MANUALLY!!!
-_TAG=${FIREBASE_VERSION}-node14-npm7
+# Note: '-nodeXY-npmZ' is NOT connected with what the base image in 'Dockerfile' provides. MAINTAIN MANUALLY!!!
+_TAG=${FIREBASE_VERSION}-node16-npm7
 
 _LOCAL_NAME=${_IMAGE_NAME}:${_TAG}
 
-# Use plain 'gcr.io' unless your Cloud Build is regional. In that case:
-#	asia.gcr.io
-#	eu.gcr.io
-#	us.gcr.io (same as plain gcr.io)
-#
-# Source: https://cloud.google.com/container-registry/docs/pushing-and-pulling
-#
+# Use plain 'gcr.io' for Cloud Build, unless you have set up a regional worker pool for the builds.
 _GCR_IO=gcr.io
 
 # Lazy evaluation trick
@@ -58,4 +53,4 @@ push-latest: build
 
 #---
 echo:
-	@echo ${PROJECT_ID}
+	@echo ${_GCR_NAME_TAGGED}
