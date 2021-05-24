@@ -189,7 +189,7 @@ It is good to occasionally remove unneeded files from the Container Registry. Th
 You can now use the image eg. in Cloud Build as:
 
 ```
-gcr.io/$PROJECT_ID/firebase-ci-builder:9.6.1-node14
+gcr.io/$PROJECT_ID/firebase-ci-builder:9.11.0-node16-npm7
 ```
 
 >If you pushed the `latest` tag, you can leave out the tag at the end.
@@ -198,22 +198,21 @@ gcr.io/$PROJECT_ID/firebase-ci-builder:9.6.1-node14
 
 >Note: You can leave `$PROJECT_ID` in the `cloudbuild.yaml`. Cloud Build knows to replace it with the current GCP project.
 
-<!-- remove?
 ---
-
 >###❗️IMPORTANT NOTE:
 >
 >Emulator images are left in the `/root/.cache` folder. In order for you to benefit from them (so that running emulators won't refetch the packages, for each build), you must do this step before running the emulators.
 >
 >```
->- name: gcr.io/$PROJECT_ID/firebase-custom-builder
+>- name: gcr.io/$PROJECT_ID/firebase-custom-builder:{$_TAG}
   entrypoint: bash
   args: ['-c', 'mv /root/.cache ~/.cache']
 >```
 >Cloud Build replaces the home directory with `/builder/home` and *does not keep* existing contents in such a folder. This is not good manners; we'd rather it would respect the image's premade home.
+>
+>Also, `ONBUILD` commands don't seem to be run by Cloud Build, leaving this our only way further...
 
 ---
--->
 
 ## References
 

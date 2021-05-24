@@ -1,8 +1,12 @@
 # Changelog
 
+## 24-May-2021
+
+- **CHANGE:** `FIREBASE_EMULATORS_PATH` so downstream doesn't need to move the emulator images (`ONBUILD` wasn't picked up by Cloud Build).
+- **OPTIMIZATION**: PubSub cached `.zip` removed (496MB image size)
+
 ## 21-May-2021
 
-- **REWORK**: Added `ONBUILD` step so user scripts don't need to move the cached emulator files
 - Upgraded to Firebase tools 9.11.0 and Node.js 16.
 
 ## 30-Mar-2021

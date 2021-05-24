@@ -15,7 +15,7 @@ _TAG=${FIREBASE_VERSION}-node16-npm7
 
 _LOCAL_NAME=${_IMAGE_NAME}:${_TAG}
 
-# Use plain 'gcr.io' for Cloud Build, unless you have set up a regional worker pool for the builds.
+# Use plain 'gcr.io' for Cloud Build, unless you have a regional worker pool.
 _GCR_IO=gcr.io
 
 # Lazy evaluation trick
@@ -53,4 +53,4 @@ push-latest: build
 
 #---
 echo:
-	@echo ${_GCR_NAME_TAGGED}
+	@echo ${_LOCAL_NAME}
