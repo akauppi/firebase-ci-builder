@@ -25,3 +25,11 @@ Step #1: NODE_VERSION=14.16.0
 Step #1: _=/usr/bin/env
 ```
 
+## Dive 🤿
+
+- [dive](https://github.com/wagoodman/dive) 
+
+   "A tool for exploring each layer in a docker image"
+
+The author found `dive` useful, at one stage. Has *completely* forgotten how to use it, though - luckily its `README` has the key map!
+

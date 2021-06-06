@@ -1,5 +1,11 @@
 # Changelog
 
+## 1-Jun-2021
+
+- **CHANGE**: Enabled UI emulation; disabled Pub/Sub; mentioning Storage
+
+   The idea is that people can enable/disable just the emulators they need to prefetch.
+
 ## 24-May-2021
 
 - **CHANGE:** `FIREBASE_EMULATORS_PATH` so downstream doesn't need to move the emulator images (`ONBUILD` wasn't picked up by Cloud Build).

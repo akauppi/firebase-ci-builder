@@ -57,11 +57,13 @@ RUN apk --no-cache add openjdk11-jre bash
 RUN yarn global add firebase-tools@${FIREBASE_VERSION} \
   && yarn cache clean
 
-# Include all products that have a 'firebase setup:emulators:...' step (except 'ui' since we don't need interactive UI).
+# Products that have 'setup:emulators:...' (only some of these are cached into the image, but you can tune the set):
 #
 #   - Realtime database
 #   - Firestore
-#   - Pub/Sub (keep only the folder)
+#   - Storage
+#   - Pub/Sub
+#   - Emulator UI   (not needed in CI; include this for Docker-based development)
 #
 # NOTE: The caching goes to '/root/.cache', under the home of this image.
 #   Cloud Build (as of 27-Mar-21) does NOT respect the image's home, but places one in '/builder/home', instead.
@@ -80,14 +82,23 @@ RUN yarn global add firebase-tools@${FIREBASE_VERSION} \
 #
 RUN firebase setup:emulators:database
 RUN firebase setup:emulators:firestore
-RUN firebase setup:emulators:pubsub \
-  && rm /root/.cache/firebase/emulators/pubsub-emulator*.zip
-  #
+#RUN firebase setup:emulators:storage
+#RUN firebase setup:emulators:pubsub \
+#  && rm /root/.cache/firebase/emulators/pubsub-emulator*.zip
+
+# Note: We also bring in the emulator UI, though it's not needed in CI. This helps in using the same image also in dev.
+#
+RUN firebase setup:emulators:ui \
+  && rm -rf /root/.cache/firebase/emulators/ui-v*.zip
+
   # $ ls .cache/firebase/emulators/
   #   firebase-database-emulator-v4.7.2.jar   (27,6 MB)
   #   cloud-firestore-emulator-v1.11.15.jar   (57,4 MB)
-  #   pubsub-emulator-0.1.0                   (37,9 MB)
+  #   cloud-storage-rules-runtime-v1.0.0.jar  (31,7 MB)   ; NOT INCLUDED (people can use it; will get downloaded if they do)
+  #   pubsub-emulator-0.1.0                   (37,9 MB)   ; NOT INCLUDED (-''-)
   #   pubsub-emulator-0.1.0.zip               (34,9 MB)   ; removed
+  #   ui-v1.5.0                               (24 MB)
+  #   ui-v1.5.0.zip                           (6 MB)      ; removed
 
 # Setting the env.var so 'firebase-tools' finds the images.
 #

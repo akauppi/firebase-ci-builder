@@ -63,15 +63,11 @@ This certainly works for the author.
       `./google-cloud-sdk/install.sh`
 
       `./google-cloud-sdk/bin/gcloud init`
-   </details>
 
    To update: `gcloud components update`
+   </details>
 
 ---
-
-Recommended (optional):
-
-- [dive](https://github.com/wagoodman/dive) - "A tool for exploring each layer in a docker image"
 
 ### Configure Docker
 
@@ -91,7 +87,7 @@ $ make build
 Successfully built 29a6e8655e16
 ```
 
-It should result in an image of ~533 <!--was:~557, ~706, ~679--> MB in size, containing:
+It should result in an image of ~481 <!-- was: ~496, ~533, ~557, ~706, ~679--> MB in size, containing:
 
 - JDK
 - `firebase` CLI
@@ -103,10 +99,12 @@ It should result in an image of ~533 <!--was:~557, ~706, ~679--> MB in size, con
 You can check the size by:
 
 ```
-$ docker image ls firebase-ci-builder:9.6.1-node16
+$ docker image ls firebase-ci-builder:9.11.0-node16-npm7
 REPOSITORY            TAG                  IMAGE ID       CREATED         SIZE
-firebase-ci-builder   9.11.0-node16-npm7   90e213f2a93d   6 minutes ago   533MB
+firebase-ci-builder   9.11.0-node16-npm7   90e213f2a93d   6 minutes ago   481MB
 ```
+
+*The image size depends on which emulators are cached into the image. You can tune that pretty easily by commenting/uncommenting blocks in `Dockerfile`, to match your needs.*
 
 
 ## Push to the cloud
