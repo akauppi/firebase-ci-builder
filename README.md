@@ -2,23 +2,21 @@
 
 Docker image for projects needing to run Firebase CLI, `npm` and Firebase emulation (which requires Java).
 
+Contains instructions on building locally, and pushing to Google Cloud Registry that you control.
+
 **Provides**
 
-- `firebase-tools` & emulators (*)
+- `firebase-tools` & emulators, some prefetched
 - OpenJDK 11
 - node.js 16
-- `npm` 7.13.x
+- `npm` 7.15
 
-   <small>(*) pre-fetched, except `ui`</small>
-
-The image is based on [BusyBox](https://en.wikipedia.org/wiki/BusyBox). 
-
-We add some command line comfort:
+In addition to [BusyBox](https://en.wikipedia.org/wiki/BusyBox), the image has some command line comfort:
 
 ||version|
 |---|---|
 |`bash`|v.5.1.0+|
-|`curl`|7.76.1+|
+|`curl`|7.77.0+|
 
 Naturally, you may add more by deriving the Dockerfile or just forking it and editing to your liking.
 
@@ -26,32 +24,29 @@ Naturally, you may add more by deriving the Dockerfile or just forking it and ed
 
 - Community [Firebase image](https://github.com/GoogleCloudPlatform/cloud-builders-community/tree/master/firebase)
 
-  Is left behind. 
-  
-  The info that there's emulation (that requires Java) has not reached it, yet. There is an [issue](https://github.com/GoogleCloudPlatform/cloud-builders-community/issues/441) raised but no PR. Pushing this code to the community repo would be the right thing to do but feels like too much friction for the author.
+  The info that there's emulation (that requires Java) has not reached it, yet (Jun 2021). There is an [issue](https://github.com/GoogleCloudPlatform/cloud-builders-community/issues/441) raised but no PR. Pushing this code to the community repo would be the right thing to do but feels like too much friction for the author.
 
 - [`timbru31/docker-java-node`](https://github.com/timbru31/docker-java-node)
  
-  This repo is mentioned as a foundation having both Java and Node. However, the author faced problems building it (23-Mar-21). Being based on "Azul" OpenJDK image wasn't reaffirming for general use, either. 
+  This repo is mentioned as a foundation having both Java and Node. However, the author faced problems building it (Mar-21). Being based on "Azul" OpenJDK image wasn't reaffirming for general use, either. 
 
-  The repo takes a JDK/JRE base image and installs Node on top of it.
+  The repo takes a JDK/JRE base image and installs Node on top of it. This repo does the opposite.
 
 **Approach**
 
-Publishing Docker images may be costly (you are charged by the downloads, and images are big), so the approach taken here is that you build the image on your own, and push it to a private repo that *your* projects use.
+Publishing Docker images may be costly (you are charged by the downloads, and images are big), so the approach taken here is that you build the image on your own (maybe tuning it, eg. changing the set of pre-fetched emulators), and push it to a private registry that *your* projects use.
 
 This certainly works for the author.
 
 ## Requirements
 
 - Docker
-- GNU `make`
-- `gcloud` CLI
+- `gcloud` CLI (optional; for pushing to Cloud Registry)
 
----
-
-- <details><summary>*Installing `gcloud` on macOS...*</summary>
+   --- 
    
+   <details><summary>*Installing `gcloud` on macOS...*</summary>
+      
    1. Download the package from [official installation page](https://cloud.google.com/sdk/docs/install)
    2. Extract in the downloads folder, but then..
    3. Move `google-cloud-sdk` to a location where you'd like it to remain (e.g. `~/bin`).
@@ -59,35 +54,50 @@ This certainly works for the author.
       When you run the install script, the software is installed *in place*. You cannot move it around any more.
       
    4. From here, you can follow the official instructions:
-
+   
       `./google-cloud-sdk/install.sh`
-
+   
       `./google-cloud-sdk/bin/gcloud init`
-
+   
    To update: `gcloud components update`
    </details>
 
----
+   <details><summary>*Installing `gcloud` on Windows 10 + WSL2...*</summary>
 
-### Configure Docker
+   ```
+   $ apt-get install google-cloud-sdk
+   ```
+   
+   >Note: This version may lack a bit behind, and doesn't have support for `gcloud components`, but should be enough.
+   
+   To update: `sudo apt-get upgrade google-cloud-sdk`
+	</details>      
 
->Before you can push or pull images, you must configure Docker to use the gcloud command-line tool to authenticate requests to Container Registry.<sub>[source](https://cloud.google.com/container-registry/docs/quickstart)</sub>
+   ---
+
+>The repo gives guidance on pushing to Google Cloud Registry. You can obviously use any Docker registry, just as well.
+
+### Configure Docker (if using Cloud Registry)
+
+Configure Docker to use the `gcloud` command-line tool to authenticate requests to Container Registry.<sub>[source](https://cloud.google.com/container-registry/docs/quickstart)</sub>
 
 ```
 $ gcloud auth configure-docker
 ```
 
-## Build the image locally
+
+## Build the image
 
 You can do this simply to see that the build succeeds.
 
 ```
-$ make build
+$ ./build
+[+] Building 66.3s (11/11) FINISHED                        
 ...
-Successfully built 29a6e8655e16
+ => => naming to docker.io/library/firebase-ci-builder:9.12.1-node16-npm7
 ```
 
-It should result in an image of ~481 <!-- was: ~496, ~533, ~557, ~706, ~679--> MB in size, containing:
+It should result in an image of ~482 <!-- was: ~496, ~533, ~557, ~706, ~679--> MB in size, containing:
 
 - JDK
 - `firebase` CLI
@@ -99,15 +109,16 @@ It should result in an image of ~481 <!-- was: ~496, ~533, ~557, ~706, ~679--> M
 You can check the size by:
 
 ```
-$ docker image ls firebase-ci-builder:9.11.0-node16-npm7
-REPOSITORY            TAG                  IMAGE ID       CREATED         SIZE
-firebase-ci-builder   9.11.0-node16-npm7   90e213f2a93d   6 minutes ago   481MB
+$ docker image ls firebase-ci-builder
+REPOSITORY            TAG                  IMAGE ID       CREATED          SIZE
+firebase-ci-builder   9.12.1-node16-npm7   65419911b290   33 minutes ago   482MB
+firebase-ci-builder   9.11.0-node16-npm7   0ae35fa0e493   18 hours ago     482MB
 ```
 
 *The image size depends on which emulators are cached into the image. You can tune that pretty easily by commenting/uncommenting blocks in `Dockerfile`, to match your needs.*
 
 
-## Push to the cloud
+## Push to the Cloud Registry
 
 ---
 
@@ -115,7 +126,7 @@ firebase-ci-builder   9.11.0-node16-npm7   90e213f2a93d   6 minutes ago   481MB
 >
 >Instead, push the image once to the US Container Registry. Cloud Build gets it fast, does its job and can deploy to any region. Since your code is involved, not data, this should be outside of GDPR domain (no guarantees, author's opinion). 
 >
->Counter note: If you set up a [worker pool](https://cloud.google.com/sdk/gcloud/reference/alpha/builds/worker-pools/create), you can run Cloud Build within the region. You probably know the drill if you're doing such.
+>If you set up a [worker pool](https://cloud.google.com/sdk/gcloud/reference/alpha/builds/worker-pools/create), you can run Cloud Build within the region. You probably know the drill if you're doing such.
 >
 >You can follow the discussion here: [FR: Select build region](https://issuetracker.google.com/issues/63480105) (Google IssueTracker)
 
@@ -128,56 +139,25 @@ $ gcloud config get-value project 2>/dev/null
 some-230321
 ```
 
+>The author recommends dedicating a certain GCP project just for the build images and non-deployment Cloud Build tasks.
+
 Push the built image to Container Registry:
 
->This pushes to `gcr.io`. If you know you want another registry, see the `Makefile`.
-
 ```
-$ make push
-docker build --pull --build-arg FIREBASE_VERSION=9.11.0 . -t firebase-ci-builder:9.11.0-node16-npm7
-[+] Building 0.8s (9/9) FINISHED                                                                                                                                                                                                                          
-...
-
-Use 'docker scan' to run Snyk tests against images to find vulnerabilities and learn how to fix them
-/Library/Developer/CommandLineTools/usr/bin/make _realPush
-docker tag firebase-ci-builder:9.11.0-node16-npm7 gcr.io/groundlevel-160221/firebase-ci-builder:9.11.0-node16-npm7
-docker push gcr.io/groundlevel-160221/firebase-ci-builder:9.11.0-node16-npm7
-The push refers to repository [gcr.io/groundlevel-160221/firebase-ci-builder]
-efd4b6737905: Pushed 
-b82e4a3f1bb0: Pushed 
-43fcfe48be7e: Pushed 
-59b893fe3d1a: Pushed 
-10240d23865e: Layer already exists 
-51b98edbb053: Layer already exists 
-01853fbda02d: Layer already exists 
-b2d5eeeaba3a: Layer already exists 
-9.11.0-node16-npm7: digest: sha256:e59a64f5a7809024530a11482cdf25bb70d8d8db0cb8647be8f8cb62e343d4d7 size: 2005
+$ VERSION=9.12.1 ./push-to-gcr.io
 ```
 
 ### Pushing `latest` (optional)
 
-The above instructions (and the `Makefile`) only push a *tagged* image. 
+If you want, you can also push with the tag `latest`. This allows your users to get a default version, but the author thinks this is not needed.
 
-If you want, you can also push one with tag `latest`. This allows your users to get a default version, but the author thinks this is not needed / recommended practise.
-
->Why? The use is in CI/CD pipelines, and there it's best to explicitly state the versions of the tools needed, i.e. use a tagged image.
-
-```
-$ make push-latest
-...
-PUSH_TAG=latest /Library/Developer/CommandLineTools/usr/bin/make _realPush
-docker tag firebase-custom-builder:9.6.1-node14-npm7 gcr.io/groundlevel-160221/firebase-custom-builder:latest
-docker push gcr.io/groundlevel-160221/firebase-custom-builder:latest
-...
-```
-
->Note: We might remove the `push-latest` target since the use case for `latest` is shaky.
+>Why? The use is in CI/CD pipelines, and there it's best to explicitly state the versions of the tools needed.
 
 
 ### [Container Registry Pricing](https://cloud.google.com/container-registry/pricing)
 
-The price for Standard buckets in a multi-region is about $0.026 per GB per month.
-i.e. for keeping a single 557MB image, it's ~0,01 € / month.
+The price for Standard buckets in a multi-region is about \$0.026 per GB per month.
+i.e. for keeping a single 500MB image, it's ~0,01 € / month.
 
 It is good to occasionally remove unneeded files from the Container Registry. The author would simply delete the whole contents of the bucket and re-push the images required.
 
@@ -187,30 +167,45 @@ It is good to occasionally remove unneeded files from the Container Registry. Th
 You can now use the image eg. in Cloud Build as:
 
 ```
-gcr.io/$PROJECT_ID/firebase-ci-builder:9.11.0-node16-npm7
+gcr.io/$PROJECT_ID/firebase-ci-builder:9.12.0-node16-npm7
 ```
 
->If you pushed the `latest` tag, you can leave out the tag at the end.
+>Note: If you are using the image within the same project, you can leave `$PROJECT_ID` in the `cloudbuild.yaml`. Cloud Build knows to replace it with the current GCP project.
 
-<p></p>
+### Using from another GCP project
 
->Note: You can leave `$PROJECT_ID` in the `cloudbuild.yaml`. Cloud Build knows to replace it with the current GCP project.
+<font color=red>... tbd. instructions on how to grant inter-project access to Cloud Registry ...
+</font>
 
----
->###❗️IMPORTANT NOTE:
->
->Emulator images are left in the `/root/.cache` folder. In order for you to benefit from them (so that running emulators won't refetch the packages, for each build), you must do this step before running the emulators.
->
->```
->- name: gcr.io/$PROJECT_ID/firebase-custom-builder:{$_TAG}
-  entrypoint: bash
-  args: ['-c', 'mv /root/.cache ~/.cache']
->```
->Cloud Build replaces the home directory with `/builder/home` and *does not keep* existing contents in such a folder. This is not good manners; we'd rather it would respect the image's premade home.
->
->Also, `ONBUILD` commands don't seem to be run by Cloud Build, leaving this our only way further...
+<!--
+based on:
+https://cloud.google.com/deployment-manager/docs/configuration/using-images-from-other-projects-for-vm-instances
 
----
+https://cloud.google.com/container-registry/docs/access-control#granting_users_and_other_projects_access_to_a_registry
+
+https://cloud.google.com/ai-hub/docs/registry-setup
+
+1. Get a service account name for the project needing the images
+   e.g. `PROJECT-NUMBER@cloudbuild.gserviceaccount.com`
+
+   source: https://cloud.google.com/container-registry/docs/access-control#gcp-permissions
+   
+2. Follow https://cloud.google.com/container-registry/docs/access-control#granting_users_and_other_projects_access_to_a_registry
+
+	"Storage Object Viewer" looks right
+
+-->
+
+## Notes on Cloud Build 
+
+Emulator images are left in the `/root/.cache` folder, and the emulators find them via an env.variable. 
+
+This is needed, because Cloud Build replaces the home directory with `/builder/home` and *does not keep* existing contents in such a folder. This is not good manners; we'd rather it would respect the image's premade home.
+
+If Cloud Build becomes more home (and user) friendly, at some point, we could build the image differently.
+
+>Where a Docker image is being used *should not affect* its building in this way. What this means is that we're currently building a Firebase Emulators image **optimized for Cloud Build** instead of use in any CI/CD system supporting Docker images as build steps.
+
 
 ## References
 

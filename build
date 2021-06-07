@@ -1,0 +1,26 @@
+#!/bin/bash
+set -eu -o pipefail
+
+#
+# Build the Docker image
+#
+# Usage:
+#   <<
+#     $ ./build.sh
+#   <<
+#
+# Requires:
+#	- docker
+#
+
+# see -> https://github.com/firebase/firebase-tools/releases
+#
+_VERSION=9.12.1
+
+_IMAGE_NAME=firebase-ci-builder
+
+# Note: '-nodeXY-npmZ' is NOT connected with what the base image in 'Dockerfile' provides. MAINTAIN MANUALLY!!!
+_TAG=${_VERSION}-node16-npm7
+
+docker build --pull --build-arg FIREBASE_VERSION=${_VERSION} . -t ${_IMAGE_NAME}:${_TAG}
+

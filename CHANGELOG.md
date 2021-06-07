@@ -1,5 +1,10 @@
 # Changelog
 
+## 7-Jun-2021
+
+- **CHANGE**: No longer needing GNU Make
+- Updated to `firebase-tools` 9.12.1.
+
 ## 1-Jun-2021
 
 - **CHANGE**: Enabled UI emulation; disabled Pub/Sub; mentioning Storage
