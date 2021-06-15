@@ -7,7 +7,7 @@ Contains instructions on building locally, and pushing to Google Cloud Registry 
 **Provides**
 
 - `firebase-tools` & emulators, some prefetched
-- OpenJDK 11
+- OpenJDK JRE 11
 - node.js 16
 - `npm` 7.15
 
@@ -97,7 +97,7 @@ $ ./build
  => => naming to docker.io/library/firebase-ci-builder:9.12.1-node16-npm7
 ```
 
-It should result in an image of ~482 <!-- was: ~496, ~533, ~557, ~706, ~679--> MB in size, containing:
+It should result in an image of ~473 <!-- was: ~482, ~496, ~533, ~557, ~706, ~679--> MB in size, containing:
 
 - JDK
 - `firebase` CLI
@@ -111,8 +111,7 @@ You can check the size by:
 ```
 $ docker image ls firebase-ci-builder
 REPOSITORY            TAG                  IMAGE ID       CREATED          SIZE
-firebase-ci-builder   9.12.1-node16-npm7   65419911b290   33 minutes ago   482MB
-firebase-ci-builder   9.11.0-node16-npm7   0ae35fa0e493   18 hours ago     482MB
+firebase-ci-builder   9.12.1-node16-npm7   65419911b290   33 minutes ago   473MB
 ```
 
 *The image size depends on which emulators are cached into the image. You can tune that pretty easily by commenting/uncommenting blocks in `Dockerfile`, to match your needs.*
@@ -144,7 +143,7 @@ some-230321
 Push the built image to Container Registry:
 
 ```
-$ VERSION=9.12.1 ./push-to-gcr.io
+$ ./push-to-gcr
 ```
 
 ### Pushing `latest` (optional)
@@ -160,6 +159,8 @@ The price for Standard buckets in a multi-region is about \$0.026 per GB per mon
 i.e. for keeping a single 500MB image, it's ~0,01 € / month.
 
 It is good to occasionally remove unneeded files from the Container Registry. The author would simply delete the whole contents of the bucket and re-push the images required.
+
+>Note: Firebase GitHub Issues somewhere states that images should be removed in the Container Registry, not the Cloud Storage bucket.
 
 
 ## Using the image

@@ -1,5 +1,9 @@
 # Changelog
 
+## 15-Jun-2021
+
+- **CHANGE**: Using "headless" JRE, trims ~10MB off the image
+
 ## 7-Jun-2021
 
 - **CHANGE**: No longer needing GNU Make

@@ -1,0 +1,31 @@
+#!/bin/bash
+set -eu -o pipefail
+
+#
+# Push to Container Registry
+#
+# Usage:
+#   <<
+#     $ ./push-to-gcr
+#   <<
+#
+# Requires:
+#	  - docker
+#   - gcloud
+#   - sed, grep
+#
+_VERSION=$(cat build | grep -E "^_VERSION=" | sed s/^_VERSION=//)
+_GCP_PROJECT=$(gcloud config get-value project 2>/dev/null)
+
+GCR_IMG=gcr.io/${_GCP_PROJECT}/firebase-ci-builder:${_VERSION}-node16-npm7
+LOCAL_IMG=firebase-ci-builder:${_VERSION}-node16-npm7
+
+echo ""
+echo "Going to push ${GCR_IMG}"
+echo ""
+read -p "Continue (y/N)?" -n 1 CHOICE
+echo
+if [ "$CHOICE" = y ]; then
+  docker tag ${LOCAL_IMG} ${GCR_IMG}
+  docker push ${GCR_IMG}
+fi

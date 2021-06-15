@@ -2,7 +2,7 @@
 # Dockerfile for Firebase CI testing
 #
 # Provides:
-#   - 'firebase' CLI, with emulators pre-installed
+#   - 'firebase' CLI, with some emulators pre-installed
 #   - node.js and npm >=7.7.0
 #   - bash, curl
 #
@@ -31,9 +31,8 @@
 # As of Mar'21:
 #   "current-alpine": 15.12.0
 #   "lts-alpine": 14.16.0 (npm 6.14.11)
-#
-# Note: IF YOU CHANGE THIS, change the '-nodeXX' suffix within 'Makefile'.
-#
+
+# Note: IF YOU CHANGE THIS, change the '-nodeXX' suffix within 'build' script.
 FROM node:16-alpine
 
 # Version of 'firebase-tools' is also our version
@@ -52,7 +51,11 @@ ARG FIREBASE_VERSION
 # Add 'npm' 7 (was needed with node 14). KEEP?
 #RUN npm install -g npm
 
-RUN apk --no-cache add openjdk11-jre bash
+RUN apk --no-cache add openjdk11-jre-headless
+
+# Auxiliary tools; The '-alpine' base image is based on 'busybox' and doesn't have these.
+#
+RUN apk --no-cache add bash curl
 
 RUN yarn global add firebase-tools@${FIREBASE_VERSION} \
   && yarn cache clean
@@ -70,13 +73,7 @@ RUN yarn global add firebase-tools@${FIREBASE_VERSION} \
 #   More importantly, it seems to overwrite existing '/builder/home' contents, not allowing us to prepopulate.
 #
 # @Firebase:
-#   - what is the best caching policy in a pre-fabricated image like this (we wish to not need to load and install
-#     emulators *ever* in running the container; can that be restricted?); would rather fail a build and need to
-#     update the builder image.
-#   - [x] can we remove either the 'pubsub' folder, or the zip file? Why are both cached (isn't that wasteful; 37.9MB
-#         for the folder; 34.9MB for the .zip). [Removing the .zip]
-#   - ![x]! How to place files so that Cloud Build would not override those (and they would "just work" for the application
-#         build). [Using the 'FIREBASE_EMULATORS_PATH' env.var.]
+#   - [ ] Can we trust on 'FIREBASE_EMULATORS_PATH' env.var. to be a feature? (it's not documented; Jun 2021)
 #
 # Note: Adding as separate layers, with the least changing mentioned first.
 #
@@ -93,7 +90,7 @@ RUN firebase setup:emulators:ui \
 
   # $ ls .cache/firebase/emulators/
   #   firebase-database-emulator-v4.7.2.jar   (27,6 MB)
-  #   cloud-firestore-emulator-v1.11.15.jar   (57,4 MB)
+  #   cloud-firestore-emulator-v1.12.0.jar    (57,5 MB)
   #   cloud-storage-rules-runtime-v1.0.0.jar  (31,7 MB)   ; NOT INCLUDED (people can use it; will get downloaded if they do)
   #   pubsub-emulator-0.1.0                   (37,9 MB)   ; NOT INCLUDED (-''-)
   #   pubsub-emulator-0.1.0.zip               (34,9 MB)   ; removed
@@ -112,11 +109,6 @@ RUN firebase setup:emulators:ui \
 #   so it might seize to work, one day... #good-enough
 #
 ENV FIREBASE_EMULATORS_PATH '/root/.cache/firebase/emulators'
-
-# Auxiliary tools; The '-alpine' base image is based on 'busybox' and doesn't have these.
-#
-RUN apk --no-cache add \
-  curl
 
 #|# Be eventually a user rather than root
 #|#
