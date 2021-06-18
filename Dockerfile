@@ -89,10 +89,10 @@ RUN firebase setup:emulators:ui \
   && rm -rf /root/.cache/firebase/emulators/ui-v*.zip
 
   # $ ls .cache/firebase/emulators/
-  #   firebase-database-emulator-v4.7.2.jar   (27,6 MB)
   #   cloud-firestore-emulator-v1.12.0.jar    (57,5 MB)
-  #   cloud-storage-rules-runtime-v1.0.0.jar  (31,7 MB)   ; NOT INCLUDED (people can use it; will get downloaded if they do)
-  #   pubsub-emulator-0.1.0                   (37,9 MB)   ; NOT INCLUDED (-''-)
+  #   cloud-storage-rules-runtime-v1.0.0.jar  (31,7 MB)   ; NOT PRE-FETCHED (people can use it; will get downloaded if they do)
+  #   firebase-database-emulator-v4.7.2.jar   (27,6 MB)
+  #   pubsub-emulator-0.1.0                   (37,9 MB)   ; NOT PRE-FETCHED (-''-)
   #   pubsub-emulator-0.1.0.zip               (34,9 MB)   ; removed
   #   ui-v1.5.0                               (24 MB)
   #   ui-v1.5.0.zip                           (6 MB)      ; removed
