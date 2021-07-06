@@ -5,13 +5,17 @@
 #   - 'firebase' CLI, with some emulators pre-installed
 #   - node.js and npm >=7.7.0
 #   - bash, curl
+#   - a user 'user' created (can be activated manually)
 #
 # Note:
 #   Cloud Build requires that the builder image has 'root' rights; not a dedicated user.
 #   Otherwise, one gets all kinds of access right errors with '/builders/home/.npm' and related files.
 #
-#   This is fine. There is no damage or risk, leaving the builder image with root, so the user/home related lines have
+#   This is fine. There is no damage or risk, leaving the builder image with root so the user/home related lines have
 #   been permanently disabled by '#|' prefix.
+#
+# Manual user land:
+#   It's sometimes good to debug things as a user, a 'user' is added. Jump there with 'passwd user' and 'login user'.
 #
 # Note:
 #   Use of 'FIREBASE_EMULATORS_PATH' env.var. seems legit, but it's not mentioned in 'firebase-tools' documentation.
@@ -37,16 +41,14 @@ FROM node:16-alpine
 
 # Version of 'firebase-tools' is also our version
 #
-# #later: Is there a benefit placing it also in 'env'? eg. seeing the build parameters of an image?
 ARG FIREBASE_VERSION
-#ENV FIREBASE_VERSION ${FIREBASE_VERSION}
 
 #|# It should not matter where the home is, but based on an error received with Cloud Build (beta 2021.03.19),
 #|# the commands it excercises seem to expect to be able to 'mkdir' a folder within '/builder/home'.
 #|#
 #|ENV HOME /builder/home
-#|ENV USER user
-#|ENV GROUP mygroup
+ENV USER user
+ENV GROUP mygroup
 
 # Add 'npm' 7 (was needed with node 14). KEEP?
 #RUN npm install -g npm
@@ -59,6 +61,12 @@ RUN apk --no-cache add bash curl
 
 RUN yarn global add firebase-tools@${FIREBASE_VERSION} \
   && yarn cache clean
+
+# Alternative:
+#
+# Note: With this approach (from Firebase docs), we are not in charge of the version (which we.. like to be :).
+#
+#RUN curl -sL https://firebase.tools | bash
 
 # Products that have 'setup:emulators:...' (only some of these are cached into the image, but you can tune the set):
 #
@@ -110,11 +118,18 @@ RUN firebase setup:emulators:ui \
 #
 ENV FIREBASE_EMULATORS_PATH '/root/.cache/firebase/emulators'
 
-#|# Be eventually a user rather than root
-#|#
-#|RUN addgroup -S ${GROUP} && adduser -S ${USER} -G mygroup && \
-#|  mkdir -p ${HOME} && \
-#|  chown -R ${USER}:${GROUP} ${HOME}
+# Allow manual user invocation.
+#
+#ENV USER_HOME /home/${USER}
+
+RUN addgroup -S ${GROUP} && \
+  adduser --disabled-password \
+    --ingroup ${GROUP} \
+    ${USER}
+
+  # Note: npm needs the user to have a home directory ('/home/user')
+  #mkdir -p ${USER_HOME} && \
+  #chown -R ${USER}:${GROUP} ${USER_HOME}
 
 #|WORKDIR ${HOME}
 
@@ -122,9 +137,5 @@ ENV FIREBASE_EMULATORS_PATH '/root/.cache/firebase/emulators'
 #|USER ${USER}
 #|   # $ whoami
 #|   # user
-
-#|# Create '${HOME}/.npm' (as a user); trying to avoid access errors with Cloud Build.
-#|#
-#|RUN mkdir ${HOME}/.npm
 
 # Don't define an 'ENTRYPOINT' since we provide multiple ('firebase', 'npm'). Cloud Build scripts can choose one.

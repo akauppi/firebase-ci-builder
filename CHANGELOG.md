@@ -1,5 +1,11 @@
 # Changelog
 
+## 5-Jul-2021
+
+- **ADD** (undercover): A user `user` created, for manual use.
+
+   Cloud Build still requires that the image is left without a `USER`.
+
 ## 15-Jun-2021
 
 - **CHANGE**: Using "headless" JRE, trims ~10MB off the image
