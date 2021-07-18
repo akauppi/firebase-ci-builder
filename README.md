@@ -9,7 +9,7 @@ Contains instructions on building locally, and pushing to Google Cloud Registry 
 - `firebase-tools` & emulators, some prefetched
 - OpenJDK JRE 11
 - node.js 16
-- `npm` 7.15
+- `npm`
 
 In addition to [BusyBox](https://en.wikipedia.org/wiki/BusyBox), the image has some command line comfort:
 
@@ -35,8 +35,6 @@ Naturally, you may add more by deriving the Dockerfile or just forking it and ed
 **Approach**
 
 Publishing Docker images may be costly (you are charged by the downloads, and images are big), so the approach taken here is that you build the image on your own (maybe tuning it, eg. changing the set of pre-fetched emulators), and push it to a private registry that *your* projects use.
-
-This certainly works for the author.
 
 ## Requirements
 
@@ -75,9 +73,9 @@ This certainly works for the author.
 
    ---
 
->The repo gives guidance on pushing to Google Cloud Registry. You can obviously use any Docker registry, just as well.
+The repo gives guidance on pushing to Google Cloud Registry. You can obviously use any Docker registry, just as well.
 
-### Configure Docker (if using Cloud Registry)
+### Configure Docker for Container Registry
 
 Configure Docker to use the `gcloud` command-line tool to authenticate requests to Container Registry.<sub>[source](https://cloud.google.com/container-registry/docs/quickstart)</sub>
 
@@ -94,10 +92,10 @@ You can do this simply to see that the build succeeds.
 $ ./build
 [+] Building 66.3s (11/11) FINISHED                        
 ...
- => => naming to docker.io/library/firebase-ci-builder:9.12.1-node16-npm7
+ => => naming to docker.io/library/firebase-ci-builder:9.16.0-node16-npm7
 ```
 
-It should result in an image of ~473 <!-- was: ~482, ~496, ~533, ~557, ~706, ~679--> MB in size, containing:
+It should result in an image of ~461 <!-- was: ~473, ~482, ~496, ~533, ~557, ~706, ~679--> MB in size, containing:
 
 - JDK
 - `firebase` CLI
@@ -111,13 +109,13 @@ You can check the size by:
 ```
 $ docker image ls firebase-ci-builder
 REPOSITORY            TAG                  IMAGE ID       CREATED          SIZE
-firebase-ci-builder   9.12.1-node16-npm7   65419911b290   33 minutes ago   473MB
+firebase-ci-builder   9.16.0-node16-npm7   65419911b290   33 minutes ago   461MB
 ```
 
 *The image size depends on which emulators are cached into the image. You can tune that pretty easily by commenting/uncommenting blocks in `Dockerfile`, to match your needs.*
 
 
-## Push to the Cloud Registry
+## Push to the Container Registry
 
 ---
 
@@ -146,7 +144,7 @@ Push the built image to Container Registry:
 $ ./push-to-gcr
 ```
 
-### Pushing `latest` (optional)
+### Maybe... you don't want to push a `latest` tag
 
 If you want, you can also push with the tag `latest`. This allows your users to get a default version, but the author thinks this is not needed.
 
@@ -168,40 +166,35 @@ It is good to occasionally remove unneeded files from the Container Registry. Th
 You can now use the image eg. in Cloud Build as:
 
 ```
-gcr.io/$PROJECT_ID/firebase-ci-builder:9.12.0-node16-npm7
+gcr.io/$PROJECT_ID/firebase-ci-builder:9.16.0-node16-npm7
 ```
 
 >Note: If you are using the image within the same project, you can leave `$PROJECT_ID` in the `cloudbuild.yaml`. Cloud Build knows to replace it with the current GCP project.
 
 ### Using from another GCP project
 
-<font color=red>... tbd. instructions on how to grant inter-project access to Cloud Registry ...
-</font>
-
-<!--
-based on:
-https://cloud.google.com/deployment-manager/docs/configuration/using-images-from-other-projects-for-vm-instances
-
-https://cloud.google.com/container-registry/docs/access-control#granting_users_and_other_projects_access_to_a_registry
-
-https://cloud.google.com/ai-hub/docs/registry-setup
+To use the same image from other Google Cloud projects, e.g. for deployment CI/CD runs: 
 
 1. Get a service account name for the project needing the images
    e.g. `PROJECT-NUMBER@cloudbuild.gserviceaccount.com`
-
-   source: https://cloud.google.com/container-registry/docs/access-control#gcp-permissions
+   <sub>[source](https://cloud.google.com/container-registry/docs/access-control#gcp-permissions)</sub>
    
-2. Follow https://cloud.google.com/container-registry/docs/access-control#granting_users_and_other_projects_access_to_a_registry
+2. Follow [Configuring access control](https://cloud.google.com/container-registry/docs/access-control#granting_users_and_other_projects_access_to_a_registry) (Container Registry docs)
 
 	"Storage Object Viewer" looks right
 
+>**References**
+>
+>- [Using Images from Other Projects](https://cloud.google.com/deployment-manager/docs/configuration/using-images-from-other-projects-for-vm-instances)
+>- [Setting up a shared Container Registry](https://cloud.google.com/ai-hub/docs/registry-setup)
+
+<!-- tbd. If the instructions themselves are enough, disable the 'references'
 -->
+
 
 ## Notes on Cloud Build 
 
-Emulator images are left in the `/root/.cache` folder, and the emulators find them via an env.variable. 
-
-This is needed, because Cloud Build replaces the home directory with `/builder/home` and *does not keep* existing contents in such a folder. This is not good manners; we'd rather it would respect the image's premade home.
+Emulator images are left in the `/root/.cache` folder, and the emulators find them via an environment variable. This is needed, because Cloud Build replaces the home directory with `/builder/home` and *does not keep* existing contents in such a folder. This is not good manners; we'd rather it would respect the image's premade home.
 
 If Cloud Build becomes more home (and user) friendly, at some point, we could build the image differently.
 

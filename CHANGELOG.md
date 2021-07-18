@@ -1,5 +1,9 @@
 # Changelog
 
+## 18-Jul-2021
+
+- Updated `firebase-tools` to 9.16.0
+
 ## 5-Jul-2021
 
 - **ADD** (undercover): A user `user` created, for manual use.
