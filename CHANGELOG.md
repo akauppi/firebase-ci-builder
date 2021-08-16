@@ -1,5 +1,9 @@
 # Changelog
 
+## 16-Aug-2021
+
+- Suppressing npm update notifications
+
 ## 18-Jul-2021
 
 - Updated `firebase-tools` to 9.16.0

@@ -59,6 +59,9 @@ ENV GROUP mygroup
 # Updating 'npm' was needed with Node 14. KEEP
 #RUN npm install -g npm
 
+# Suppress npm update announcements
+RUN npm config set update-notifier false
+
 RUN apk --no-cache add openjdk11-jre-headless
 
 # Auxiliary tools; The '-alpine' base image is based on 'busybox' and doesn't have these.
