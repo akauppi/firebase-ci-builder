@@ -54,7 +54,6 @@ ARG FIREBASE_VERSION
 #|#
 #|ENV HOME /builder/home
 ENV USER user
-ENV GROUP mygroup
 
 # Updating 'npm' was needed with Node 14. KEEP
 #RUN npm install -g npm
@@ -129,14 +128,11 @@ ENV FIREBASE_EMULATORS_PATH '/root/.cache/firebase/emulators'
 #
 #ENV USER_HOME /home/${USER}
 
-RUN addgroup -S ${GROUP} && \
-  adduser --disabled-password \
-    --ingroup ${GROUP} \
-    ${USER}
+RUN adduser --disabled-password ${USER}
 
   # Note: npm needs the user to have a home directory ('/home/user')
   #mkdir -p ${USER_HOME} && \
-  #chown -R ${USER}:${GROUP} ${USER_HOME}
+  #chown -R ${USER} ${USER_HOME}
 
 #|WORKDIR ${HOME}
 

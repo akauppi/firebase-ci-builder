@@ -1,5 +1,9 @@
 # Changelog
 
+## 25-Aug-2021
+
+- Pumped up to 9.16.5 ⛽️
+
 ## 16-Aug-2021
 
 - Suppressing npm update notifications
