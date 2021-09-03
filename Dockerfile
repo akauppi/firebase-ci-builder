@@ -30,17 +30,10 @@
 # Node images
 #   -> https://hub.docker.com/_/node
 #
-# As of Jul'21:
-#   "current-alpine": 16.5.0
-#   "16-alpine": 16.5.0 (npm 7.19.1)
-#
-# As of May'21:
-#   "current-alpine": 16.2.0
-#   "16-alpine": 16.2.0 (npm 7.13.0)
-#
-# As of Mar'21:
-#   "current-alpine": 15.12.0
-#   "lts-alpine": 14.16.0 (npm 6.14.11)
+#              | Node   | npm    |
+#   | -------- | ------ | ------ |
+#   | Sep 2021 | 16.8.0 | 7.21.0 |
+#   | Jul 2021 | 16.5.0 | 7.19.1 |
 
 # Note: IF YOU CHANGE THIS, change the '-nodeXX' suffix within 'build' script.
 FROM node:16-alpine
