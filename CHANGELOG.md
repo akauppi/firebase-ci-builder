@@ -1,5 +1,13 @@
 # Changelog
 
+## 9-Jan-2022
+
+- Bumped to Firebase CLI 10.0.1; Node 16 now comes with npm 8 causing a name change of the image.
+
+## 11-Dec-2021
+
+- Added license for Google's Dev Library
+
 ## 3-Sep-2021
 
 - Upgraded to 9.17.0

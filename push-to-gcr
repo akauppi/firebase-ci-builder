@@ -17,8 +17,8 @@ set -eu -o pipefail
 _VERSION=$(cat build | grep -E "^_VERSION=" | sed s/^_VERSION=//)
 _GCP_PROJECT=$(gcloud config get-value project 2>/dev/null)
 
-GCR_IMG=gcr.io/${_GCP_PROJECT}/firebase-ci-builder:${_VERSION}-node16-npm7
-LOCAL_IMG=firebase-ci-builder:${_VERSION}-node16-npm7
+GCR_IMG=gcr.io/${_GCP_PROJECT}/firebase-ci-builder:${_VERSION}-node16-npm8
+LOCAL_IMG=firebase-ci-builder:${_VERSION}-node16-npm8
 
 echo ""
 echo "Going to push ${GCR_IMG}"
