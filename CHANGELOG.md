@@ -1,5 +1,10 @@
 # Changelog
 
+## 6-Mar-2022
+
+- Bumped to `firebase-tools` 10.2.2
+- Disabled `database` emulator (not personally needing it)
+
 ## 9-Jan-2022
 
 - Bumped to Firebase CLI 10.0.1; Node 16 now comes with npm 8 causing a name change of the image.

@@ -32,6 +32,7 @@
 #
 #              | Node   | npm    |
 #   | -------- | ------ | ------ |
+#   | Mar 2022 | 16.14.0|  8.3.1 |
 #   | Jan 2022 | 16.13.1|  8.1.2 |
 #   | Sep 2021 | 16.8.0 | 7.21.0 |
 #   | Jul 2021 | 16.5.0 | 7.19.1 |
@@ -87,7 +88,7 @@ RUN yarn global add firebase-tools@${FIREBASE_VERSION} \
 #
 # Note: Adding as separate layers, with least changing first.
 #
-RUN firebase setup:emulators:database
+#RUN firebase setup:emulators:database
 RUN firebase setup:emulators:firestore
 #RUN firebase setup:emulators:storage
 #RUN firebase setup:emulators:pubsub \
