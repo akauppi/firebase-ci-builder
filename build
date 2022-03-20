@@ -17,8 +17,7 @@ set -eu -o pipefail
 #     -> https://github.com/firebase/firebase-tools/releases
 
 # Note: Keep the variable name, read from 'push-to-gcr'.
-#_VERSION=9.17.0
-_VERSION=10.2.2
+_VERSION=10.4.0
 
 _IMAGE_NAME=firebase-ci-builder
 

@@ -20,19 +20,7 @@ In addition to [BusyBox](https://en.wikipedia.org/wiki/BusyBox), the image has s
 
 Naturally, you may add more by deriving the Dockerfile or just forking it and editing to your liking.
 
-**Other images**
-
-- Community [Firebase image](https://github.com/GoogleCloudPlatform/cloud-builders-community/tree/master/firebase)
-
-  The info that there's emulation (that requires Java) has not reached it, yet (Jun 2021). There is an [issue](https://github.com/GoogleCloudPlatform/cloud-builders-community/issues/441) raised but no PR. Pushing this code to the community repo would be the right thing to do but feels like too much friction for the author.
-
-- [`timbru31/docker-java-node`](https://github.com/timbru31/docker-java-node)
- 
-  This repo is mentioned as a foundation having both Java and Node. However, the author faced problems building it (Mar-21). Being based on "Azul" OpenJDK image wasn't reaffirming for general use, either. 
-
-  The repo takes a JDK/JRE base image and installs Node on top of it. This repo does the opposite.
-
-**Approach**
+**Publishing / customization approach**
 
 Publishing Docker images may be costly (you are charged by the downloads, and images are big), so the approach taken here is that you build the image on your own (maybe tuning it, eg. changing the set of pre-fetched emulators), and push it to a private registry that *your* projects use.
 
@@ -82,7 +70,6 @@ Configure Docker to use the `gcloud` command-line tool to authenticate requests 
 ```
 $ gcloud auth configure-docker
 ```
-
 
 ## Build the image
 
@@ -199,6 +186,27 @@ Emulator images are left in the `/root/.cache` folder, and the emulators find th
 If Cloud Build becomes more home (and user) friendly, at some point, we could build the image differently.
 
 >Where a Docker image is being used *should not affect* its building in this way. What this means is that we're currently building a Firebase Emulators image **optimized for Cloud Build** instead of use in any CI/CD system supporting Docker images as build steps.
+
+
+## Alternatives
+
+- Community [Firebase image](https://github.com/GoogleCloudPlatform/cloud-builders-community/tree/master/firebase)
+
+  The info that there's emulation (that requires Java) has not reached it, yet (Jun 2021). There is an [issue](https://github.com/GoogleCloudPlatform/cloud-builders-community/issues/441) raised but no PR. Pushing this code to the community repo would be the right thing to do but feels like too much friction for the author.
+
+- [`timbru31/docker-java-node`](https://github.com/timbru31/docker-java-node)
+ 
+  This repo is mentioned as a foundation having both Java and Node. However, the author faced problems building it (Mar-21). Being based on "Azul" OpenJDK image wasn't reaffirming for general use, either. 
+
+  The repo takes a JDK/JRE base image and installs Node on top of it. This repo does the opposite.
+
+---
+
+Obviously, some consolidation of these efforts would be Good For All.
+
+It is unfortunate this support is not arising from the Firebase team itself. The author thinks it should - but it can also be a community endeavour, where we show Firebase that a better Emulator Experience (EX?) can be reached.
+
+One crucial part of this would be speeding up the emulators. The aim should be much higher than the official package - let's say 5x faster, 5x easier, and sandboxed.
 
 
 ## References
