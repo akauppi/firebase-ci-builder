@@ -79,10 +79,10 @@ You can do this simply to see that the build succeeds.
 $ ./build
 [+] Building 66.3s (11/11) FINISHED                        
 ...
- => => naming to docker.io/library/firebase-ci-builder:9.17.0-node16-npm7
+ => => naming to docker.io/library/firebase-ci-builder:10.6.0-node16-npm8
 ```
 
-It should result in an image of ~467 <!-- was: ~461, ~473, ~482, ~496, ~533, ~557, ~706, ~679--> MB in size, containing:
+It should result in an image of ~443 <!-- was: ~461, ~473, ~482, ~496, ~533, ~557, ~706, ~679--> MB in size, containing:
 
 - JDK
 - `firebase` CLI
@@ -96,7 +96,7 @@ You can check the size by:
 ```
 $ docker image ls firebase-ci-builder
 REPOSITORY            TAG                  IMAGE ID       CREATED          SIZE
-firebase-ci-builder   9.17.0-node16-npm7   65419911b290   33 minutes ago   467MB
+firebase-ci-builder   10.6.0-node16-npm8   8f394d6a604f   17 seconds ago   443MB
 ```
 
 *The image size depends on which emulators are cached into the image. You can tune that pretty easily by commenting/uncommenting blocks in `Dockerfile`, to match your needs.*
@@ -153,7 +153,7 @@ It is good to occasionally remove unneeded files from the Container Registry. Th
 You can now use the image eg. in Cloud Build as:
 
 ```
-gcr.io/$PROJECT_ID/firebase-ci-builder:9.17.0-node16-npm7
+gcr.io/$PROJECT_ID/firebase-ci-builder:10.6.0-node16-npm8
 ```
 
 >Note: If you are using the image within the same project, you can leave `$PROJECT_ID` in the `cloudbuild.yaml`. Cloud Build knows to replace it with the current GCP project.

@@ -3,7 +3,7 @@
 #
 # Provides:
 #   - 'firebase' CLI, with some emulators pre-installed
-#   - node.js and npm >=7.7.0
+#   - node.js 16 and npm 8
 #   - bash, curl
 #   - a user 'user' created (can be activated manually)
 #
@@ -62,14 +62,13 @@ RUN apk --no-cache add openjdk11-jre-headless
 #
 RUN apk --no-cache add bash curl
 
+# Install 'firebase-tools' in the way that allows us to declare the version.
+#
 RUN yarn global add firebase-tools@${FIREBASE_VERSION} \
   && yarn cache clean
-
-# Alternative:
-#
-# Note: With this approach (from Firebase docs), we are not in charge of the version (which we.. like to be :).
-#
-#RUN curl -sL https://firebase.tools | bash
+  #
+  # Note: The installation approach from Firebase docs does not allow stating the version:
+  #   'curl -sL https://firebase.tools | bash'
 
 # Products that have 'setup:emulators:...' (only some of these are cached into the image, but you can tune the set):
 #
@@ -99,12 +98,12 @@ RUN firebase setup:emulators:firestore
 RUN firebase setup:emulators:ui \
   && rm -rf /root/.cache/firebase/emulators/ui-v*.zip
 
-  # $ ls .cache/firebase/emulators/
-  #   cloud-firestore-emulator-v1.13.1.jar    (57.7 MB)
-  #   cloud-storage-rules-runtime-v1.0.1.jar  (31.2 MB)   ; NOT PRE-FETCHED (people can use it; will get downloaded if they do)
-  #   firebase-database-emulator-v4.7.2.jar   (27.6 MB)
-  #   pubsub-emulator-0.1.0                   (37.9 MB)   ; NOT PRE-FETCHED (-''-)
-  #   ui-v1.6.0                               (13.8 MB)
+  # $ ls /root/.cache/firebase/emulators/
+  #   cloud-firestore-emulator-v1.14.1.jar    (57.6 MB)
+  #   cloud-storage-rules-runtime-v1.0.2.jar  (34.1 MB)
+  #   firebase-database-emulator-v4.7.3.jar   (27.5 MB)
+  #   pubsub-emulator-0.1.0                   (37.9 MB)
+  #   ui-v1.6.5                               (14.2 MB)
 
 # Setting the env.var so 'firebase-tools' finds the images.
 #
