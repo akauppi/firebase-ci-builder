@@ -1,5 +1,9 @@
 # Changelog
 
+## 22-May-2022
+
+- Update to `firebase-tools` 11.0.0
+
 ## 9-Apr-2022
 
 - Update to `firebase-tools` 10.6.0

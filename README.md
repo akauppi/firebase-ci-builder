@@ -15,8 +15,8 @@ In addition to [BusyBox](https://en.wikipedia.org/wiki/BusyBox), the image has s
 
 ||version|
 |---|---|
-|`bash`|v.5.1.0+|
-|`curl`|7.77.0+|
+|`bash`|v.5.1.16+|
+|`curl`|7.80.0+|
 
 Naturally, you may add more by deriving the Dockerfile or just forking it and editing to your liking.
 
@@ -82,7 +82,7 @@ $ ./build
  => => naming to docker.io/library/firebase-ci-builder:10.6.0-node16-npm8
 ```
 
-It should result in an image of ~443 <!-- was: ~461, ~473, ~482, ~496, ~533, ~557, ~706, ~679--> MB in size, containing:
+It should result in an image of ~448 <!-- was: ~443, ~461, ~473, ~482, ~496, ~533, ~557, ~706, ~679--> MB in size, containing:
 
 - JDK
 - `firebase` CLI
