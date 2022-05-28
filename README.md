@@ -1,6 +1,6 @@
 # firebase-ci-builder
 
-Docker image for projects needing to run Firebase CLI, `npm` and Firebase emulation (which requires Java).
+Docker image for projects needing to run Firebase CLI or Firebase emulation (which requires Java).
 
 Contains instructions on building locally, and pushing to Google Cloud Registry that you control.
 
@@ -8,7 +8,7 @@ Contains instructions on building locally, and pushing to Google Cloud Registry 
 
 - `firebase-tools` & emulators, some prefetched
 - OpenJDK JRE 11
-- node.js 16
+- node.js 18
 - `npm`
 
 In addition to [BusyBox](https://en.wikipedia.org/wiki/BusyBox), the image has some command line comfort:
@@ -82,7 +82,7 @@ $ ./build
  => => naming to docker.io/library/firebase-ci-builder:10.6.0-node16-npm8
 ```
 
-It should result in an image of ~448 <!-- was: ~443, ~461, ~473, ~482, ~496, ~533, ~557, ~706, ~679--> MB in size, containing:
+It should result in an image of ~490 <!-- was: ~448, ~443, ~461, ~473, ~482, ~496, ~533, ~557, ~706, ~679--> MB in size, containing:
 
 - JDK
 - `firebase` CLI
@@ -96,10 +96,12 @@ You can check the size by:
 ```
 $ docker image ls firebase-ci-builder
 REPOSITORY            TAG                  IMAGE ID       CREATED          SIZE
-firebase-ci-builder   10.6.0-node16-npm8   8f394d6a604f   17 seconds ago   443MB
+firebase-ci-builder   11.0.1-node18-npm8   8f394d6a604f   17 seconds ago   490MB
 ```
 
 *The image size depends on which emulators are cached into the image. You can tune that pretty easily by commenting/uncommenting blocks in `Dockerfile`, to match your needs.*
+
+*Pumping to Node.js 18 caused a +42MB increase (over Node.js 16), but we want to keep to the latest stable tools.*
 
 
 ## Push to the Container Registry

@@ -32,13 +32,14 @@
 #
 #              | Node   | npm    |
 #   | -------- | ------ | ------ |
+#   | May 2022 | 18.2.0 |  8.9.0 |  <-- change to node.js 18
 #   | Mar 2022 | 16.14.0|  8.3.1 |
 #   | Jan 2022 | 16.13.1|  8.1.2 |
 #   | Sep 2021 | 16.8.0 | 7.21.0 |
 #   | Jul 2021 | 16.5.0 | 7.19.1 |
 
 # Note: IF YOU CHANGE THIS, change the '-nodeXX' suffix within 'build' script.
-FROM node:16-alpine
+FROM node:18-alpine
 
 # Version of 'firebase-tools' is also our version
 #
@@ -64,7 +65,9 @@ RUN apk --no-cache add bash curl
 
 # Install 'firebase-tools' in the way that allows us to declare the version.
 #
-RUN yarn global add firebase-tools@${FIREBASE_VERSION} \
+# '--ignore-optional' eliminates warnings on 'gyp'
+#
+RUN yarn global add --ignore-optional firebase-tools@${FIREBASE_VERSION} \
   && yarn cache clean
   #
   # Note: The installation approach from Firebase docs does not allow stating the version:

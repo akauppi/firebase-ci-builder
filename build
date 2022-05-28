@@ -17,11 +17,11 @@ set -eu -o pipefail
 #     -> https://github.com/firebase/firebase-tools/releases
 
 # Note: Keep the variable name, read by 'push-to-gcr'.
-_VERSION=11.0.0
+_VERSION=11.0.1
 
 _IMAGE_NAME=firebase-ci-builder
 
 # Note: '-nodeXY-npmZ' is NOT connected with what the base image in 'Dockerfile' provides. MAINTAIN MANUALLY!!!
-_TAG=${_VERSION}-node16-npm8
+_TAG=${_VERSION}-node18-npm8
 
 docker build --pull --build-arg FIREBASE_VERSION=${_VERSION} . -t ${_IMAGE_NAME}:${_TAG}
