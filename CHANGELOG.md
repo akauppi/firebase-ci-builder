@@ -1,5 +1,9 @@
 # Changelog
 
+## 14-Jun-2022
+
+- Preloading also Realtime Database; 11.0.1b
+
 ## 28-May-2022
 
 - Moved to Node.js 18; `firebase-tools` 11.0.1

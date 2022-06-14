@@ -22,6 +22,7 @@ _VERSION=11.0.1
 _IMAGE_NAME=firebase-ci-builder
 
 # Note: '-nodeXY-npmZ' is NOT connected with what the base image in 'Dockerfile' provides. MAINTAIN MANUALLY!!!
-_TAG=${_VERSION}-node18-npm8
+_TAG=${_VERSION}b-node18-npm8
+  # tbd. REMOVE 'b' in next version update
 
 docker build --pull --build-arg FIREBASE_VERSION=${_VERSION} . -t ${_IMAGE_NAME}:${_TAG}
