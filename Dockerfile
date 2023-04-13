@@ -39,7 +39,7 @@
 #   | Jul 2021 | 16.5.0 | 7.19.1 |
 
 # Note: IF YOU CHANGE THIS, change the '-nodeXX' suffix within 'build' script.
-FROM node:18-alpine
+FROM --platform=linux/amd64 node:18-alpine
 
 # Version of 'firebase-tools' is also our version
 #
